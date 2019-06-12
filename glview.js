@@ -42,7 +42,7 @@ const createGlview = (paletteimg, sketch) => {
         if (v_paletteCoord.x < 0. || v_paletteCoord.y < 0.) {
             o_color = vec4(0, 0, 0, 0);
         } else {
-            o_color = texture(u_palette, v_paletteCoord + u_paletteOffset);
+            o_color = texture(u_palette, (v_paletteCoord + u_paletteOffset)/256.);
         }
     }
     `;

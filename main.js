@@ -85,7 +85,7 @@ function keyDown(e){
 		changeTool(keymap[e.key]);
 	} else if (!isNaN(parseInt(e.key))) {
 	    let val = parseInt(e.key) - 0.5;
-	    brush.palette[0] = val / 8;
+	    brush.palette[0] = val * 32;
 	    document.getElementById("paletteX").value = val * 32;
 	}
 }
@@ -94,22 +94,6 @@ function keyUp(e){
 	if (e.key in keymap){
         changeTool("pen");
 	}
-}
-
-function savesvg() {
-	// https://stackoverflow.com/questions/38477972/javascript-save-svg-element-to-file-on-disk?rq=1
-	let svgdoctype = document.implementation.createDocumentType('svg', "-//W3C//DTD SVG 1.1//EN", "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd");
-	let svgdoc = document.implementation.createDocument('http://www.w3.org/2000/svg', 'svg', svgdoctype);
- 	svgdoc.replaceChild(exportsvg(sketch), svgdoc.documentElement);
-	let svgstr = (new XMLSerializer()).serializeToString(svgdoc);
-	let svgblob = new Blob([svgstr.replace(/></g, '>\n\r<')]);
-	let svgurl = URL.createObjectURL(svgblob);
-	window.open(svgurl);
-	let svglink = document.createElement("a");
-	svglink.href = svgurl;
-	svglink.download = "svg.svg";
-	svglink.click();
-	URL.revokeObjectURL(svgurl);
 }
 
 function init(){
@@ -150,12 +134,14 @@ function init(){
 		brush.weight = Math.exp(parseFloat(e.target.value));
 	});
 	document.getElementById("paletteX").addEventListener("change", function(e){
-		brush.palette[0] = e.target.value/256;
+		brush.palette[0] = e.target.value;
 	});
 	document.getElementById("paletteY").addEventListener("change", function(e){
-		brush.palette[1] = e.target.value/256;
+		brush.palette[1] = e.target.value;
 	});
-	document.getElementById("exportsvg").addEventListener("click", savesvg);
+	document.getElementById("exportsvg").addEventListener("click", ()=>{
+        savesvg(exportsvg(sketch, palette))
+    });
 	main();
 
 	if ('serviceWorker' in navigator) {

@@ -10,7 +10,7 @@ const createPen = () => {
                 type: "line",
                 points: [sketch.pix2sketch(inputs.p)],
                 width: inputs.weight / sketch.view.scale,
-                palette: inputs.palette,
+                palette: inputs.palette.slice(),
                 update: true
             };
             idstr = "line" + id;

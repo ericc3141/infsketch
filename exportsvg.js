@@ -1,13 +1,17 @@
 "use strict";
 
+// https://stackoverflow.com/questions/38477972/javascript-save-svg-element-to-file-on-disk?rq=1
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const SVG_DOCTYPE = document.implementation.createDocumentType('svg', "-//W3C//DTD SVG 1.1//EN", "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd");
+
 /* Returns SVG element representing current view of sketch,
  * given a palette
  */
 function exportsvg(sketch, palette) {
-    let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    let svgns = svg.namespaceURI;
+	let svgdoc = document.implementation.createDocument(SVG_NS, 'svg', SVG_DOCTYPE);
+    let svg = svgdoc.documentElement;
 
-    let style = document.createElementNS(svgns, "style");
+    let style = document.createElementNS(SVG_NS, "style");
     style.innerHTML += `
         .line {
             fill: none;
@@ -27,12 +31,19 @@ function exportsvg(sketch, palette) {
     ]
     svg.setAttribute("viewBox", bounds.join(" "));
 
+    let paletteCvs = document.createElement("canvas");
+    paletteCvs.width = palette.width;
+    paletteCvs.height = palette.height;
+    let paletteCtx = paletteCvs.getContext("2d");
+    paletteCtx.drawImage(palette, 0, 0, palette.width, palette.height);
+    let colors = {};
+
     for (let i in sketch.data) {
         let obj = sketch.data[i];
         if (obj.type !== "line") {
             continue;
         }
-        let line = document.createElementNS(svgns, "polyline");
+        let line = document.createElementNS(SVG_NS, "polyline");
         line.classList.add("line");
         line.style.strokeWidth = 2 * obj.width;
 
@@ -42,8 +53,32 @@ function exportsvg(sketch, palette) {
             pointsstr += `${p[0]} ${-p[1]} `;
         }
         line.setAttribute("points", pointsstr);
+
+        let color = `c${obj.palette[0]}_${obj.palette[1]}`;
+        line.classList.add(color);
+        if (!(color in colors)) {
+            let rgba = paletteCtx.getImageData(obj.palette[0], obj.palette[1], 1, 1).data;
+            colors[color] = `rgba(${rgba[0]},${rgba[1]},${rgba[2]},${rgba[3]})`;
+        }
         svg.appendChild(line);
     }
 
+    for (let color in colors) {
+        style.innerHTML += `.${color.slice()} { stroke: ${colors[color]};}\n`;
+    }
+
     return svg;
+}
+
+function savesvg(svgdoc) {
+	let svgstr = (new XMLSerializer()).serializeToString(svgdoc);
+	let svgblob = new Blob([svgstr.replace(/></g, '>\n\r<')]);
+	let svgurl = URL.createObjectURL(svgblob);
+	let svglink = document.createElement("a");
+	svglink.href = svgurl;
+	svglink.download = "sketch.svg";
+    document.body.appendChild(svglink);
+	svglink.click();
+    svglink.remove();
+	URL.revokeObjectURL(svgurl);
 }
