@@ -3,18 +3,18 @@
 // Simple events mixin
 const withEvents = (o) => {
     let events = {};
-    const on = on(event, func) {
-        if (!(event in events)) {
-            events[event] = [];
+    const on = (evt, func) => {
+        if (!(evt in events)) {
+            events[evt] = [];
         }
-        events[event].push(func);
+        events[evt].push(func);
     }
-    const trigger(event, ...args) {
-        if (!(event in events)) {
+    const trigger = (evt, ...args) => {
+        if (!(evt in events)) {
             return;
         }
-        for (let e in events[event]) {
-            events[event][e](this, ...args);
+        for (let e in events[evt]) {
+            events[evt][e](o, ...args);
         }
     }
 
@@ -35,3 +35,36 @@ const createSketch = () => ({
         ];
     },
 })
+
+const createPalette = (o, size) => {
+    const init_cvs = (size) => {
+        let cvs = document.createElement("canvas");
+        cvs.width = size; cvs.height = size;
+        let ctx = cvs.getContext("2d");
+        ctx.fillRect(0, 0, size, size);
+        return [cvs, ctx];
+    }
+    let orig_cvs, orig_ctx, view_cvs, view_ctx;
+    [orig_cvs, orig_ctx] = init_cvs(size);
+    [view_cvs, view_ctx] = init_cvs(size);
+
+    const redraw = () => {
+        view_ctx.drawImage(orig_cvs, 0, 0);
+    }
+
+    const loadImg = (src, callback) => {
+        let img = document.createElement("img");
+        img.onload = () => {
+            orig_ctx.drawImage(img, 0, 0, size, size);
+            redraw();
+            callback();
+        }
+        img.src = src;
+    }
+
+    const color = (coord) => {
+        return view_ctx.getImageData(coord[0], coord[1], 1, 1).data
+    }
+
+    return Object.assign(o, {size, cvs: view_cvs, loadImg, color});
+}

@@ -16,7 +16,14 @@ let keymap = {
 }
 let prevKey = "";
 let currTool = "pen";
+
+let palette = withEvents(createPalette({}, 256));
+palette.loadImg("palette.png", ()=>{palette.trigger("change")});
+
 let sketch = withEvents(createSketch());
+
+let canvas = createGlview(palette, sketch);
+
 tools["eraser"] = createEraser(sketch);
 
 
@@ -98,8 +105,7 @@ function keyUp(e){
 
 function init(){
 	console.log("init");
-	var palette = document.getElementById("palette")
-	window.canvas = createGlview(palette, sketch);
+	document.getElementById("paletteWrap").appendChild(palette.cvs);
 	document.body.appendChild(canvas.domElement);
 	canvas.resize();
 	var toolSwitches = document.getElementsByClassName("mode");

@@ -31,11 +31,6 @@ function exportsvg(sketch, palette) {
     ]
     svg.setAttribute("viewBox", bounds.join(" "));
 
-    let paletteCvs = document.createElement("canvas");
-    paletteCvs.width = palette.width;
-    paletteCvs.height = palette.height;
-    let paletteCtx = paletteCvs.getContext("2d");
-    paletteCtx.drawImage(palette, 0, 0, palette.width, palette.height);
     let colors = {};
 
     for (let i in sketch.data) {
@@ -57,7 +52,7 @@ function exportsvg(sketch, palette) {
         let color = `c${obj.palette[0]}_${obj.palette[1]}`;
         line.classList.add(color);
         if (!(color in colors)) {
-            let rgba = paletteCtx.getImageData(obj.palette[0], obj.palette[1], 1, 1).data;
+            let rgba = palette.color(obj.palette);
             colors[color] = `rgba(${rgba[0]},${rgba[1]},${rgba[2]},${rgba[3]})`;
         }
         svg.appendChild(line);

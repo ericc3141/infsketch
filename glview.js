@@ -2,7 +2,7 @@
  */
 "use strict";
 
-const createGlview = (paletteimg, sketch) => {
+const createGlview = (palette, sketch) => {
     const vs = `#version 300 es
 
     uniform float u_vheight;
@@ -89,21 +89,26 @@ const createGlview = (paletteimg, sketch) => {
     gl.vertexAttribPointer(attribLocs["a_paletteCoord"], 2, gl.FLOAT, false, 4*4, 4*2);
 
     // Set up uniforms
-    let palette = twgl.createTexture(gl, {
-        "src": paletteimg,
-        "width": paletteimg.width,
-        "height": paletteimg.height,
+    let texOpts = {
+        "src": palette.cvs,
+        "width": palette.size,
+        "height": palette.size,
         "wrap": gl.REPEAT,
         "minMag": gl.NEAREST,
-    });
+    };
+    let paletteTex = twgl.createTexture(gl, texOpts);
     let uniforms = {
         u_vheight: window.innerHieght,
         u_aspect: 1,
         u_center: new Float32Array([0,0]),
         u_scale: 1,
-        u_palette: palette,
+        u_palette: paletteTex,
         u_paletteOffset: [0, 0],
     }
+
+    palette.on("change", () => {
+        twgl.setTextureFromElement(gl, paletteTex, palette.cvs, texOpts);
+    });
 
 
     /* Respond to window resize
