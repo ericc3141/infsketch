@@ -63,8 +63,13 @@ canvas{
 #paletteContainer {
     display: inline-block;
     position: relative;
+    padding: 16px 0 0 16px;
     width: 272px;
+    height: 32px;
     overflow: hidden;
+}
+#paletteContainer:hover {
+    height: 256px;
 }
 #paletteX, #paletteY {
     width: 256px;
@@ -72,20 +77,16 @@ canvas{
     margin: 0;
 }
 #paletteX {
-    bottom: -8px;
+    top: -8px;
     left: 16px;
 }
 #paletteY {
     transform: rotate(90deg);
-    top: 120px;
+    top: 136px;
     left: -124px;
 }
-#paletteWrap {
-    overflow-y: hidden;
-    margin: 0 0 16px 16px;
-    height: 32px;
-}
-#paletteWrap:hover {
+#paletteWrap canvas {
+    width: 256px;
     height: 256px;
 }
 </style>
@@ -112,8 +113,8 @@ canvas{
 <div class="controls">
     <input type="range" id="lineWidth" min="-2" max="4" value="0" step="0.5" />
 	<div id="paletteContainer">
-        <input type="range" id="paletteX" min="0" max="255" value="0" />
-        <input type="range" id="paletteY" min="0" max="255" value="0" />
+        <input type="range" id="paletteX" min="0" max="255" value="16" />
+        <input type="range" id="paletteY" min="0" max="255" value="16" />
         <div id="paletteWrap"></div>
     </div>
     <input type="button" id="exportsvg" value="SVG" />

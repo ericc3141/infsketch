@@ -14,8 +14,8 @@ let keymap = {
 	"d":"move",
 	"f":"zoom"
 }
-let prevKey = "";
 let currTool = "pen";
+let rerender = false;
 
 let palette = withEvents(createPalette({}, 256));
 palette.loadImg("palette.png", ()=>{palette.trigger("change")});
@@ -36,17 +36,9 @@ function opt(a, b) {
 
 function main(){
 	requestAnimationFrame(main);
-	if (!brush.down){return;}
-	if (Math.abs(brush.d[0]) < 1 
-			&& Math.abs(brush.d[1]) < 1){
-		return;
-	}
-	if (currTool in tools && "move" in tools[currTool]) {
-    	tools[currTool].move({inputs: brush, sketch: sketch, view: canvas});
-	}
-	brush.d[0] = 0;
-	brush.d[1] = 0;
+    if (!rerender) { return;}
 	canvas.render();
+    rerender = false;
 }
 
 function down(e){
@@ -70,10 +62,21 @@ function up(e){
 	}
 }
 function move(e){
+	if (!brush.down){return;}
 	brush.p[0] = e.pageX;
 	brush.p[1] = e.pageY;
 	brush.d[0] += e.movementX;
 	brush.d[1] += e.movementY;
+	if (Math.abs(brush.d[0]) < 1 
+			&& Math.abs(brush.d[1]) < 1){
+		return;
+	}
+    rerender = true;
+	if (currTool in tools && "move" in tools[currTool]) {
+    	tools[currTool].move({inputs: brush, sketch: sketch, view: canvas});
+	}
+	brush.d[0] = 0;
+	brush.d[1] = 0;
 }
 
 function changeTool(newTool){
@@ -86,18 +89,28 @@ function changeTool(newTool){
 }	
 
 function keyDown(e){
-	if (e.key == prevKey){return;}
-	prevKey = e.key;
+	if (e.repeat){return;}
+
 	if (e.key in keymap){
 		changeTool(keymap[e.key]);
-	} else if (!isNaN(parseInt(e.key))) {
-	    let val = parseInt(e.key) - 0.5;
-	    brush.palette[0] = val * 32;
-	    document.getElementById("paletteX").value = val * 32;
+        return;
+	}
+
+    if (e.code.startsWith("Digit") || e.code.startsWith("Numpad")) {
+	    let val = parseInt(e.code.slice(e.code.length-1)) - 1;
+        if (e.ctrlKey && e.shiftKey) {
+            palette.shiftTo([0, -val * 32]);
+            rerender = true;
+        } else if (e.shiftKey) {
+            brush.palette[1] = val * 32 + 16;
+            document.getElementById("paletteY").value = val * 32 + 16;
+        } else {
+            brush.palette[0] = val * 32 + 16;
+            document.getElementById("paletteX").value = val * 32 + 16;
+        }
 	}
 }
 function keyUp(e){
-	prevKey = "";
 	if (e.key in keymap){
         changeTool("pen");
 	}

@@ -27,7 +27,6 @@ const createSketch = () => ({
         center: [0, 0],
         scale: 1,
     },
-    paletteOffset: [0, 0],
     pix2sketch: function pix2sketch(pix) {
         return [
             (pix[0] - window.innerWidth/2) / this.view.scale + this.view.center[0],
@@ -49,7 +48,10 @@ const createPalette = (o, size) => {
     [view_cvs, view_ctx] = init_cvs(size);
 
     const redraw = () => {
-        view_ctx.drawImage(orig_cvs, 0, 0);
+        view_ctx.drawImage(orig_cvs, -o.offset[0], -o.offset[1]);
+        view_ctx.drawImage(orig_cvs, -o.offset[0], -o.offset[1] - size);
+        view_ctx.drawImage(orig_cvs, -o.offset[0] - size, -o.offset[1]);
+        view_ctx.drawImage(orig_cvs, -o.offset[0] - size, -o.offset[1] - size);
     }
 
     const loadImg = (src, callback) => {
@@ -65,6 +67,13 @@ const createPalette = (o, size) => {
     const color = (coord) => {
         return view_ctx.getImageData(coord[0], coord[1], 1, 1).data
     }
+    const shiftTo = (coord) => {
+        o.offset = coord.slice();
+        redraw();
+    }
 
-    return Object.assign(o, {size, cvs: view_cvs, loadImg, color});
+    return Object.assign(o, {
+        size, offset: [0,0], cvs: view_cvs, 
+        loadImg, shiftTo, color
+    });
 }

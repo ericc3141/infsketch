@@ -103,7 +103,7 @@ const createGlview = (palette, sketch) => {
         u_center: new Float32Array([0,0]),
         u_scale: 1,
         u_palette: paletteTex,
-        u_paletteOffset: [0, 0],
+        u_paletteOffset: new Float32Array([0,0]),
     }
 
     palette.on("change", () => {
@@ -152,8 +152,8 @@ const createGlview = (palette, sketch) => {
         uniforms.u_center[0] = sketch.view.center[0];
         uniforms.u_center[1] = sketch.view.center[1];
         uniforms.u_scale = sketch.view.scale * window.devicePixelRatio;
-        uniforms.u_paletteOffset[0] = sketch.paletteOffset[0];
-        uniforms.u_paletteOffset[1] = sketch.paletteOffset[1];
+        uniforms.u_paletteOffset[0] = palette.offset[0];
+        uniforms.u_paletteOffset[1] = palette.offset[1];
         twgl.setUniforms(programInfo, uniforms);
         // Draw
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, strokes.length / 4);
