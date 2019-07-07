@@ -51,6 +51,7 @@ const createGlview = (palette, sketch) => {
     sketch.on("lineAdd", draw);
     sketch.on("lineEnd", checkFree);
     sketch.on("lineRemove", remove);
+    sketch.on("lineImport", importLine);
 
     // Buffer for attributes
     // Each point gets 4 values: [x, y, palettex, palettey]
@@ -172,6 +173,7 @@ const createGlview = (palette, sketch) => {
         // degenerate triangle
         addPoint(line.points[0], line, ptr);
         addPoint(line.points[0], line, ptr+4);
+        addUpdate(ptr, 8);
     }
 
     /* Records new range to update.
@@ -188,7 +190,7 @@ const createGlview = (palette, sketch) => {
         updateRanges.splice(i, 0, [ptr, size]);
     }
 
-    /* Write new point to strokes array at ptr and, calls addUpdate
+    /* Write new point to strokes array at ptr
      * style- should contain palette coordinates,
      *      palette: [paletteX, paletteY]
      */
@@ -197,7 +199,6 @@ const createGlview = (palette, sketch) => {
         strokes[ptr+1] = coord[1];
         strokes[ptr+2] = style.palette[0];
         strokes[ptr+3] = style.palette[1];
-        addUpdate(ptr, 4);
     }
 
     /* Add 2 points to strokes array, starting at ptr,
@@ -216,9 +217,22 @@ const createGlview = (palette, sketch) => {
 
         addPoint([coord[0]-norm[0], coord[1]-norm[1]], style, idx);
         addPoint([coord[0]+norm[0], coord[1]+norm[1]], style, idx+4);
-        // Need to cap off with 2 points to form degenerate triangle
-        addPoint(coord, style, idx+8);
-        addPoint(coord, style, idx+12);
+    }
+
+    function importLine(sketch, name) {
+        let line = sketch.data[name];
+        let size = line.points.length * 8 + 4*4;
+        let ptr = allocator.alloc(size)
+        allocs[name] = [ptr, size];
+        addUpdate(ptr, size);
+
+        addPoint(line.points[0], line, ptr);
+        addPoint(line.points[0], line, ptr+4);
+        for (let i = 1; i < line.points.length; i ++) {
+            addLine(line.points[i-1], line.points[i], line, ptr + i*8);
+        }
+        addPoint(line.points[line.points.length-1], line, ptr + line.points.length*8);
+        addPoint(line.points[line.points.length-1], line, ptr + line.points.length*8+4);
     }
 
     /* Handle drawing
@@ -247,7 +261,12 @@ const createGlview = (palette, sketch) => {
             block[1] *= 2;
             addUpdate(block[0], block[1]);
         }
-        addLine(prev, coord, line, block[0] + line.points.length * 8 - 8);
+        let idx = block[0] + line.points.length * 8 - 8;
+        addLine(prev, coord, line, idx);
+        // Need to cap off with 2 points to form degenerate triangle
+        addPoint(coord, line, idx+8);
+        addPoint(coord, line, idx+12);
+        addUpdate(idx, 16);
     }
 
     /* Handle removal of line

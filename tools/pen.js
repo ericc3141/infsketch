@@ -39,6 +39,8 @@ const createEraser = (sketch) => {
     sketch.on("lineStart", create);
     sketch.on("lineAdd", update);
     sketch.on("lineRemove", remove);
+    sketch.on("lineImport", lineImport);
+
     function create(sketch, name) {
         let p = sketch.data[name].points[0];
         bounds[name] = [p[0], p[1], p[0], p[1]];
@@ -46,7 +48,17 @@ const createEraser = (sketch) => {
     function update(sketch, name) {
         let up = sketch.data[name]
         let pnt = up.points[up.points.length - 1];
-        let bound = bounds[name];
+        updateBound(bounds[name], pnt);
+    }
+    function lineImport(sketch, name) {
+        let points = sketch.data[name].points;
+        let bound = [points[0][0], points[0][1], points[0][0], points[0][1]];
+        for (let point of points) {
+            updateBound(bound, point);
+        }
+        bounds[name] = bound;
+    }
+    function updateBound(bound, pnt) {
         bound[0] = Math.min(bound[0], pnt[0]);
         bound[1] = Math.min(bound[1], pnt[1]);
         bound[2] = Math.max(bound[2], pnt[0]);

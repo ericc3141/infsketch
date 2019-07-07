@@ -92,22 +92,20 @@ function importsvg(sketch, svgdoc, name) {
                 palette = match.slice(1);
             }
         }
+        let points = [];
+        for (let point of elem.points) {
+            points.push([point.x, -point.y]);
+        }
         let newline  = {
             type: "line",
-            points: [[elem.points[0].x, -elem.points[0].y]],
+            points: points,
             width: parseFloat(elem.style.strokeWidth)/2,
             palette: palette,
             update: true
         };
         let idstr = name + "line" + id;
         sketch.data[idstr] = newline;
-        sketch.trigger("lineStart", idstr);
-
-        for (let point of elem.points) {
-            newline.points.push([point.x, -point.y]);
-            sketch.trigger("lineAdd", idstr);
-        }
-        sketch.trigger("lineEnd", idstr);
+        sketch.trigger("lineImport", idstr);
     }
 }
 
