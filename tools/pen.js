@@ -15,11 +15,11 @@ const createPen = () => {
             };
             idstr = "line" + id;
             sketch.data[idstr] = curr;
-            sketch.trigger("lineStart", idstr, curr);
+            sketch.trigger("lineStart", idstr);
         },
         move: ({inputs, sketch, ...rest}) => {
             curr.points.push(sketch.pix2sketch(inputs.p));
-            sketch.trigger("lineAdd", idstr, ["points"]);
+            sketch.trigger("lineAdd", idstr);
         },
         up: ({inputs, sketch, ...rest}) => {
             if (!(Math.abs(inputs.p[0] - inputs.p0[0] < 2)
@@ -28,7 +28,7 @@ const createPen = () => {
                 return;
             }
             curr.points.push(sketch.pix2sketch([inputs.p[0] + 5, inputs.p[1] + 5]));
-            sketch.trigger("lineAdd", idstr, ["points"]);
+            sketch.trigger("lineAdd", idstr);
             sketch.trigger("lineEnd", idstr);
         }
     }
@@ -43,7 +43,7 @@ const createEraser = (sketch) => {
         let p = sketch.data[name].points[0];
         bounds[name] = [p[0], p[1], p[0], p[1]];
     }
-    function update(sketch, name, props) {
+    function update(sketch, name) {
         let up = sketch.data[name]
         let pnt = up.points[up.points.length - 1];
         let bound = bounds[name];

@@ -224,7 +224,7 @@ const createGlview = (palette, sketch) => {
     /* Handle drawing
      * Assumes one point has been added to line.
      */
-    function draw (sketch, name, prop) {
+    function draw (sketch, name) {
         let line = sketch.data[name];
         if (line["points"].length < 2) {
             return;

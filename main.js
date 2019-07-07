@@ -101,6 +101,8 @@ function keyDown(e){
         if (e.ctrlKey && e.shiftKey) {
             palette.shiftTo([0, -val * 32]);
             rerender = true;
+            brush.palette[1] = val * 32 + 16;
+            document.getElementById("paletteY").value = val * 32 + 16;
         } else if (e.shiftKey) {
             brush.palette[1] = val * 32 + 16;
             document.getElementById("paletteY").value = val * 32 + 16;
@@ -160,6 +162,16 @@ function init(){
 	});
 	document.getElementById("exportsvg").addEventListener("click", ()=>{
         savesvg(exportsvg(sketch, palette))
+    });
+	document.getElementById("importsvg").addEventListener("change", (e)=>{
+        let reader = new FileReader();
+        let file = e.target.files[0];
+        let name = file.name;
+        reader.onload = (e) => {
+            importsvg(sketch, loadsvg(e.target.result), name);
+            rerender = true;
+        }
+        reader.readAsText(file);
     });
 	main();
 

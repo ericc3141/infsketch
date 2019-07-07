@@ -77,3 +77,41 @@ function savesvg(svgdoc) {
     svglink.remove();
 	URL.revokeObjectURL(svgurl);
 }
+
+function importsvg(sketch, svgdoc, name) {
+    let id = 0;
+    for (let elem of svgdoc.rootElement.children) {
+        if (elem.tagName !== "polyline") {
+            continue;
+        }
+        id += 1;
+        let palette = [0, 0];
+        for (let classname of elem.classList) {
+            let match = classname.match(/c(\d*)_(\d*)/);
+            if (match) {
+                palette = match.slice(1);
+            }
+        }
+        let newline  = {
+            type: "line",
+            points: [[elem.points[0].x, -elem.points[0].y]],
+            width: parseFloat(elem.style.strokeWidth)/2,
+            palette: palette,
+            update: true
+        };
+        let idstr = name + "line" + id;
+        sketch.data[idstr] = newline;
+        sketch.trigger("lineStart", idstr);
+
+        for (let point of elem.points) {
+            newline.points.push([point.x, -point.y]);
+            sketch.trigger("lineAdd", idstr);
+        }
+        sketch.trigger("lineEnd", idstr);
+    }
+}
+
+function loadsvg(svgstring) {
+    let parser = new DOMParser();
+    return parser.parseFromString(svgstring, "image/svg+xml");
+}
