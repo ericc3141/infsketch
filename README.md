@@ -1,8 +1,8 @@
-# infinisketch
+# infsketch
 
-Every sketching app on the planet lets you draw and erase.
-Fewer give you an infinite canvas.
-Fewer can do it at a moment's notice.
+Draw and erase.
+On an infinite canvas.
+At a moment's notice.
 
 This definitely isn't the last sketching app you'll need,
 but hopefully the first.
