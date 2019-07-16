@@ -21,6 +21,7 @@ let elems = {
 
 let currTool = "";
 let currPreset = -1;
+let downPreset = -1;
 let rerender = false;
 
 let palette = withEvents(createPalette({}, 256));
@@ -108,6 +109,7 @@ function switchPreset(newPreset) {
 function setPreset(newValue) {
     palette.shiftTo([0, -newValue*32]);
     brush.palette[1] = newValue*32;
+    console.log(newValue);
     rerender = true;
     for (let i = 0; i < 8; i ++) {
         let color = palette.color([i*32 + 16, newValue*32]);
@@ -176,8 +178,9 @@ function init(){
     let presetSwitches = document.getElementsByClassName("presetSwitch");
     for (let i = 0; i < presetSwitches.length; i ++) {
         elems.presets[i] = presetSwitches[i];
-        presetSwitches[i].addEventListener("pointerup", switchPreset);
-        presetSwitches[i].addEventListener("pointerout", setPreset);
+        presetSwitches[i].addEventListener("pointerdown", (e) => {downPreset = i;});
+        presetSwitches[i].addEventListener("pointerup", (e) => {switchPreset(i);downPreset=-1;});
+        presetSwitches[i].addEventListener("pointerleave", (e) => {if (downPreset === i) {setPreset(i);}});
     }
     switchPreset(0);
 
