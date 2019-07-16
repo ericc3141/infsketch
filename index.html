@@ -6,6 +6,7 @@
 
 <title>Infsketch</title>
 
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale = 1, user-scalable=no">
 
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -14,80 +15,102 @@
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="images/icons/icon-192.png" />
 <link rel="apple-touch-icon" href="images/icons/icon-192.png" />
-<meta name="theme-color" content="#B40718" />
+<meta name="theme-color" content="#EC3141" />
 
 <style>
 
-html{
-	height:100%;
+:root {
+    --main: #EC3141;
+    --gray: #CCC;
+    --white: #FFF;
+    --block: 10vw;
 }
-body{
-	height:100%;
-	margin:0;
-	padding:0;
-	background-color: #CCC;
-	touch-action:none;
-	overflow:hidden;
+@media (min-width: 640px) {
+    :root {
+        --block: 64px;
+    }
+}
+* {
+    margin: 0;
+    box-sizing: inherit;
+    transition: inherit;
 }
 
-canvas{
-	background-color:#FFFFFF;
-	cursor:crosshair;
+html{
+    height:100%;
+}
+body{
+    box-sizing: border-box;
+    transition: all 0.1s ease;
+    height:100%;
+    font-size: 1.2em;
+    background-color: var(--gray);
+    touch-action:none;
+    overflow:hidden;
+}
+
+.canvas {
+    background-color: var(--white);
+    cursor:crosshair;
     width:100%;
     height:100%;
 }
 
-#tools {
-	position: fixed;
-	z-index: 11;
-	left: 0;
-	top: 0;
-	width: 8rem;
-}
-#tools label {
-	width: 100%;
-	margin: .1em 0;
-    padding: 0.5rem;
-    background-color: #eee;
-    display: inline-block;
-}
-
-.controls{
-	position:fixed;
-	left: 0;
-	top: 0;
-	padding: 0.5rem .5rem .5rem 10rem;
-	z-index:10;
-}
-
-#paletteContainer {
-    display: inline-block;
-    position: relative;
-    padding: 16px 0 0 16px;
-    width: 272px;
-    height: 32px;
+.panelVert, .panelHoriz {
+    position: fixed;
+    border: 1px solid var(--main);
+    border-radius: .5em 0 .5em 0;
     overflow: hidden;
 }
-#paletteContainer:hover {
-    height: 256px;
+
+.controls {
+    padding: 0;
+    list-style: none;
 }
-#paletteX, #paletteY {
-    width: 256px;
-    position: absolute;
-    margin: 0;
+.panelHoriz li {
+    display: inline-block;
 }
-#paletteX {
-    top: -8px;
-    left: 16px;
+
+#tools {
+    left: 0;
+    top: var(--block);
 }
-#paletteY {
-    transform: rotate(90deg);
-    top: 136px;
-    left: -124px;
+button, .button {
+    --active: var(--main);
+    display: inline-block;
+    width: var(--block);
+    height: var(--block);
+    font-size: inherit;
+    text-align: center;
+    vertical-align: middle;
+    line-height: var(--block);
+    color: var(--active);
+    font-weight: bold;
+    background: none;
+    border: none;
+    mix-blend-mode: difference;
 }
-#paletteWrap canvas {
-    width: 256px;
-    height: 256px;
+button:active, .active {
+    color: var(--white);
+    background-color: var(--active);
+}
+
+
+#presets {
+    left: var(--block);
+    top: 0;
+}
+#presets button {
+    border-top: calc(var(--block) / 8) solid var(--active);
+}
+
+#extras {
+    right: 0;
+    top: var(--block);
+}
+
+#importsvg {
+    display: none;
 }
 </style>
 
@@ -95,31 +118,29 @@ canvas{
 
 <body>
 
-<div id="tools">
-    <label for="pen">
-        <input class="mode" type="radio" name="mode" id="pen" value="pen" checked />
-        Pen</label>
-	<label for="eraser">
-		<input class="mode" type="radio" name="mode" id="eraser" value="eraser" />
-		Eraser</label>
-	<label for="move">
-		<input class="mode" type="radio" name="mode" id="move" value="move" />
-		Move</label>
-	<label for="zoom">
-		<input class="mode" type="radio" name="mode" id="zoom" value="zoom" />
-		Zoom</label>
-</div>
+<ul class="panelVert controls" id="tools">
+    <li><button class="modeSwitch" id="pen" >P</button></li
+    ><li><button class="modeSwitch" id="eraser" >E</button></li
+    ><li><button class="modeSwitch" id="move" >M</button></li
+    ><li><button class="modeSwitch" id="zoom" >Z</button></li>
+</ul>
 
-<div class="controls">
-    <input type="range" id="lineWidth" min="-2" max="4" value="0" step="0.5" />
-	<div id="paletteContainer">
-        <input type="range" id="paletteX" min="0" max="255" value="16" />
-        <input type="range" id="paletteY" min="0" max="255" value="16" />
-        <div id="paletteWrap"></div>
-    </div>
-    <input type="button" id="exportsvg" value="SVG" />
-    <input type="file" id="importsvg" />
-</div>
+<ul class="panelHoriz controls" id="presets">
+    <li> <button class="presetSwitch" >1</button> </li
+    ><li> <button class="presetSwitch" >2</button> </li
+    ><li> <button class="presetSwitch" >3</button> </li
+    ><li> <button class="presetSwitch" >4</button> </li
+    ><li> <button class="presetSwitch" >5</button> </li
+    ><li> <button class="presetSwitch" >6</button> </li
+    ><li> <button class="presetSwitch" >7</button> </li
+    ><li> <button class="presetSwitch" >8</button> </li>
+</ul>
+
+<ul class="panelVert controls" id="extras">
+    <li> <button id="exportsvg" >S </button> </li
+    ><li> <label class="button" for="importsvg">I</label>
+        <input type="file" id="importsvg" /></li>
+</ul>
 
 <script src="https://twgljs.org/dist/4.x/twgl.js" ></script>
 <script src="alloc.js" ></script>
