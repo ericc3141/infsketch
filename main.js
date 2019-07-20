@@ -50,6 +50,7 @@ function main(){
 
 function down(e){
     if (e.button != 0){return;}
+    e.preventDefault();
     brush.down=true;
     brush.p[0] = brush.p0[0] = e.pageX;
     brush.p[1] = brush.p0[1] = e.pageY;
@@ -109,7 +110,6 @@ function switchPreset(newPreset) {
 function setPreset(newValue) {
     palette.shiftTo([0, -newValue*32]);
     brush.palette[1] = newValue*32;
-    console.log(newValue);
     rerender = true;
     for (let i = 0; i < 8; i ++) {
         let color = palette.color([i*32 + 16, newValue*32]);
@@ -148,6 +148,7 @@ function keyUp(e){
 
 function init(){
     console.log("init");
+    document.body.addEventListener("contextmenu", (e) => {e.preventDefault();});
     document.body.appendChild(canvas.domElement);
     window.addEventListener("resize", ()=>(canvas.resize()));
 
@@ -169,7 +170,6 @@ function init(){
             changeTool(e.target.id);
         });
         mode.addEventListener("pointerup", (e) => {
-            e.preventDefault();
             changeTool("pen");
         });
     }
@@ -178,9 +178,16 @@ function init(){
     let presetSwitches = document.getElementsByClassName("presetSwitch");
     for (let i = 0; i < presetSwitches.length; i ++) {
         elems.presets[i] = presetSwitches[i];
-        presetSwitches[i].addEventListener("pointerdown", (e) => {downPreset = i;});
-        presetSwitches[i].addEventListener("pointerup", (e) => {switchPreset(i);downPreset=-1;});
-        presetSwitches[i].addEventListener("pointerleave", (e) => {if (downPreset === i) {setPreset(i);}});
+        presetSwitches[i].addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            downPreset = i;
+        });
+        presetSwitches[i].addEventListener("pointerup", (e) => {
+            switchPreset(i);downPreset=-1;
+        });
+        presetSwitches[i].addEventListener("pointerleave", (e) => {
+            if (downPreset === i) {setPreset(i);}
+        });
     }
     switchPreset(0);
 

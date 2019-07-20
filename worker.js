@@ -32,8 +32,8 @@ function fromCache(request) {
  */
 function updateCache(request) {
     return caches.open(CACHE).then((cache) => {
-        return fetch(request).then((response) => {
-            if (response.status != 200) {
+        return fetch(request, {mode:"no-cors"}).then((response) => {
+            if (response.status != 200 && response.type !== "opaque") {
                 return;
             }
             return cache.put(request, response);

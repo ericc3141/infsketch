@@ -74,7 +74,8 @@ const createEraser = (sketch) => {
             for (let i in bounds) {
                 let b = bounds[i];
                 if (!(b[0] < p[0] + rad && p[0] - rad < b[2] 
-                        && b[1] < p[1] + rad && p[1] - rad < b[3])) {
+                        && b[1] < p[1] + rad && p[1] - rad < b[3]
+                        && Math.floor(sketch.data[i].palette[1]/8) === Math.floor(inputs.palette[1]/8))) {
                     continue;
                 }
                 let stroke = sketch.data[i];
