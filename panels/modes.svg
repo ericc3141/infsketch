@@ -1,123 +1,5 @@
-<!DOCTYPE HTML>
-
-<html>
-
-<head>
-
-<title>Infsketch</title>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale = 1, user-scalable=no">
-
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-
-<link rel="manifest" href="manifest.json" />
-<link rel="icon" href="images/icons/192.png" />
-<link rel="apple-touch-icon" href="images/icons/192.png" />
-<meta name="theme-color" content="#EC3141" />
-
-<style>
-
-:root {
-    --main: #EC3141;
-    --gray: #CCC;
-    --white: #FFF;
-    --block: 10vw;
-}
-@media (min-width: 640px) {
-    :root {
-        --block: 64px;
-    }
-}
-* {
-    margin: 0;
-    box-sizing: inherit;
-    transition: inherit;
-}
-
-html{
-    height:100%;
-}
-body{
-    box-sizing: border-box;
-    transition: all 0.1s ease;
-    height:100%;
-    font-size: 1.2em;
-    background-color: var(--gray);
-    touch-action:none;
-    user-select: none;
-    overflow:hidden;
-}
-
-.canvas {
-    background-color: var(--white);
-    cursor:crosshair;
-    width:100%;
-    height:100%;
-}
-
-.panelVert, .panelHoriz {
-    position: fixed;
-    border: 1px solid var(--main);
-    border-radius: .5em 0 .5em 0;
-    overflow: hidden;
-}
-
-.controls {
-    padding: 0;
-    list-style: none;
-}
-.panelHoriz li {
-    display: inline-block;
-}
-
-#modes {
-    left: 0;
-    top: var(--block);
-}
-button, .button {
-    --active: var(--main);
-    display: inline-block;
-    width: var(--block);
-    height: var(--block);
-    font-size: inherit;
-    text-align: center;
-    vertical-align: middle;
-    line-height: var(--block);
-    color: var(--active);
-    font-weight: bold;
-    background: none;
-    border: none;
-    mix-blend-mode: difference;
-}
-button:active, .active {
-    color: var(--white);
-    background-color: var(--active);
-}
-
-
-#panel {
-    left: var(--block);
-    top: 0;
-}
-#panel button {
-    border-top: calc(var(--block) / 8) solid var(--active);
-}
-
-#menu {
-    right: 0;
-    top: var(--block);
-}
-
-#importsvg {
-    display: none;
-}
-</style>
-
-</head>
-
-<body>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -125,12 +7,15 @@ button:active, .active {
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
-   id="modes"
-   class="panelVert"
-   version="1.1"
-   viewBox="0 0 16.933333 67.733336"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="64"
    height="256"
-   width="64">
+   viewBox="0 0 16.933333 67.733336"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.4 5da689c313, 2019-01-14"
+   sodipodi:docname="modes.svg">
   <defs
      id="defs2">
     <inkscape:path-effect
@@ -198,7 +83,7 @@ button:active, .active {
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -275,35 +160,3 @@ button:active, .active {
        data-mode="zoom" />
   </g>
 </svg>
-
-<ul class="panelHoriz controls" id="panel">
-    <li> <button class="presetSwitch" >1</button> </li
-    ><li> <button class="presetSwitch" >2</button> </li
-    ><li> <button class="presetSwitch" >3</button> </li
-    ><li> <button class="presetSwitch" >4</button> </li
-    ><li> <button class="presetSwitch" >5</button> </li
-    ><li> <button class="presetSwitch" >6</button> </li
-    ><li> <button class="presetSwitch" >7</button> </li
-    ><li> <button class="presetSwitch" >8</button> </li>
-</ul>
-
-<ul class="panelVert controls" id="menu">
-    <li> <button id="exportsvg" >S </button> </li
-    ><li> <label class="button" for="importsvg">I</label>
-        <input type="file" id="importsvg" /></li>
-</ul>
-
-<canvas class="canvas" id="canvas"></canvas>
-
-<script src="https://twgljs.org/dist/4.x/twgl.js" ></script>
-<script src="alloc.js" ></script>
-<script src="tools/pen.js" ></script>
-<script src="tools/move.js" ></script>
-<script src="sketch.js" ></script>
-<script src="glview.js" ></script>
-<script src="exportsvg.js" ></script>
-<script src="main.js" ></script>
-
-</body>
-
-</html>

@@ -12,16 +12,12 @@ let brush = {
     mode: "",
 };
 let ui = {
-    palette: withEvents(createPalette({}, 256)),
-    canvas: null,
+    palette: createPalette({}, 256),
+    view: null,
     currTool: "",
     currPreset: -1,
     downPreset: -1,
 };
-ui.canvas = createGlview(ui.palette, sketch)
-ui.palette.loadImg("palette.png", ()=>{
-    ui.palette.trigger("change");
-});
 
 let config = {
     keymap: {
@@ -46,10 +42,11 @@ let modes = {
 function main(){
     requestAnimationFrame(main);
     if (!rerender) { return;}
-    ui.canvas.render();
+    ui.view.render();
     rerender = false;
 }
 
+// Main canvas events
 function updateCursor(e, {p}) {
     return {
         p: [e.pageX, e.pageY],
@@ -64,14 +61,14 @@ function runMode(ev) {
     return {}
 }
 
-function down(e){
+function brushDown(e){
     if (e.button != 0){return;}
     e.preventDefault();
     brush.down = true;
     brush.cursor = updateCursor(e, brush.cursor);
     runMode("down");
 }
-function up(e){
+function brushUp(e){
     if (!brush.down) {
         return;
     }
@@ -80,7 +77,7 @@ function up(e){
     sketch.trigger("up");
     runMode("up");
 }
-function move(e){
+function brushMove(e){
     if (!brush.down){return;}
     brush.cursor = updateCursor(e, brush.cursor);
     if (Math.abs(brush.cursor.d[0]) < 1 
@@ -91,6 +88,7 @@ function move(e){
     runMode("move");
 }
 
+// Mode switch
 function setMode(mode){
     if (mode === brush.mode) {return;}
     if (brush.down) {
@@ -99,7 +97,14 @@ function setMode(mode){
     }
     brush.mode = mode;
 }
+function modeDown(e) {
+    setMode(e.target.dataset.mode);
+}
+function modeUp(e) {
+    setMode("draw");
+}
 
+// Keyboard
 function toKey(e) {
     if (e.code.startsWith("Key")
         || e.code.startsWith("Digit")
@@ -127,41 +132,7 @@ function keyUp(e){
         setMode("draw");
     }
 }
-
-function init(){
-    console.log("init");
-    document.body.addEventListener("contextmenu", (e) => {e.preventDefault();});
-    document.body.appendChild(ui.canvas.domElement);
-    window.addEventListener("resize", ()=>(ui.canvas.resize()));
-
-    ui.canvas.domElement.addEventListener("pointerdown", down);
-    ui.canvas.domElement.addEventListener("pointerup", up);
-    ui.canvas.domElement.addEventListener("pointercancel", up);
-    ui.canvas.domElement.addEventListener("pointerout", up);
-    ui.canvas.domElement.addEventListener("pointerleave", up);
-    ui.canvas.domElement.addEventListener("pointermove", move);
-    ui.canvas.domElement.classList.add("canvas");
-    document.body.addEventListener("keydown", keyDown);
-    document.body.addEventListener("keyup", keyUp);
-
-    let modeSwitches = document.getElementsByClassName("modeSwitch");
-    for (let mode of modeSwitches){
-        mode.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            setMode(e.target.id);
-        });
-        mode.addEventListener("pointerup", (e) => {
-            setMode("draw");
-        });
-    }
-    setMode("draw");
-
-    let presetSwitches = document.getElementsByClassName("presetSwitch");
-
-    document.getElementById("exportsvg").addEventListener("click", ()=>{
-        savesvg(exportsvg(sketch, ui.palette))
-    });
-    document.getElementById("importsvg").addEventListener("change", (e)=>{
+        /*savesvg(exportsvg(sketch, ui.palette))
         let reader = new FileReader();
         let file = e.target.files[0];
         let name = file.name;
@@ -169,9 +140,37 @@ function init(){
             importsvg(sketch, loadsvg(e.target.result), name);
             rerender = true;
         }
-        reader.readAsText(file);
+        reader.readAsText(file);*/
+
+function init(){
+    console.log("init");
+
+    let canvas = document.getElementById("canvas");
+    ui.view = createGlview(canvas, sketch)
+    canvas.addEventListener("pointerdown", brushDown);
+    canvas.addEventListener("pointerup", brushUp);
+    canvas.addEventListener("pointercancel", brushUp);
+    canvas.addEventListener("pointerout", brushUp);
+    canvas.addEventListener("pointerleave", brushUp);
+    canvas.addEventListener("pointermove", brushMove);
+
+    document.body.addEventListener("keydown", keyDown);
+    document.body.addEventListener("keyup", keyUp);
+    window.addEventListener("resize", ()=>(ui.view.resize()));
+    document.body.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
     });
-    ui.canvas.resize();
+
+    let modes = document.getElementById("modes");
+    modes.addEventListener("pointerdown", modeDown);
+    modes.addEventListener("pointerup", modeUp);
+
+    setMode("draw");
+
+    ui.palette.loadImg("palette.png", ()=>{
+        ui.view.setPalette(ui.palette.cvs);
+    });
+    ui.view.resize();
     main();
 
     /*if ('serviceWorker' in navigator) {

@@ -2,7 +2,7 @@
  */
 "use strict";
 
-const createGlview = (palette, sketch) => {
+const createGlview = (cvs, sketch) => {
     const vs = `#version 300 es
 
     uniform float u_vheight;
@@ -67,7 +67,6 @@ const createGlview = (palette, sketch) => {
 
     // WebGL init
     let size = [0, 0];
-    let cvs = document.createElement("canvas");
     let gl = cvs.getContext("webgl2");
     let programInfo = twgl.createProgramInfo(gl, [vs, fs], ["a_pos", "a_paletteCoord"]);
     gl.useProgram(programInfo.program);
@@ -91,13 +90,10 @@ const createGlview = (palette, sketch) => {
 
     // Set up uniforms
     let texOpts = {
-        "src": palette.cvs,
-        "width": palette.size,
-        "height": palette.size,
         "wrap": gl.REPEAT,
         "minMag": gl.NEAREST,
     };
-    let paletteTex = twgl.createTexture(gl, texOpts);
+    let paletteTex = twgl.createTexture(gl, {src: [0,0,0,1], ...texOpts});
     let uniforms = {
         u_vheight: window.innerHieght,
         u_aspect: 1,
@@ -107,9 +103,9 @@ const createGlview = (palette, sketch) => {
         u_paletteOffset: new Float32Array([0,0]),
     }
 
-    palette.on("change", () => {
-        twgl.setTextureFromElement(gl, paletteTex, palette.cvs, texOpts);
-    });
+    function setPalette(src) {
+        twgl.setTextureFromElement(gl, paletteTex, src, texOpts);
+    };
 
 
     /* Respond to window resize
@@ -153,8 +149,8 @@ const createGlview = (palette, sketch) => {
         uniforms.u_center[0] = sketch.view.center[0];
         uniforms.u_center[1] = sketch.view.center[1];
         uniforms.u_scale = sketch.view.scale * window.devicePixelRatio;
-        uniforms.u_paletteOffset[0] = palette.offset[0];
-        uniforms.u_paletteOffset[1] = palette.offset[1];
+        uniforms.u_paletteOffset[0] = sketch.paletteShift[0];
+        uniforms.u_paletteOffset[1] = sketch.paletteShift[1];
         twgl.setUniforms(programInfo, uniforms);
         // Draw
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, strokes.length / 4);
@@ -304,6 +300,7 @@ const createGlview = (palette, sketch) => {
     return {
         domElement: cvs,
         size,
+        setPalette,
         resize,
         render,
         _strokes: strokes,
