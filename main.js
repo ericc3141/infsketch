@@ -1,198 +1,165 @@
 "use strict";
 
+let sketch = withEvents(createSketch());
 let brush = {
-    p: [0, 0], // position
-    d: [0, 0], // delta
-    p0: [0, 0],// start position
-    "down":false,
+    cursor: {
+        p: [0, 0],
+        p0: [0, 0],
+        d: [0, 0],
+    },
+    down: false,
     weight: 1,
-    palette: [0, 0],
-}
-let keymap = {
-    "a":"pen",
-    "s":"eraser",
-    "d":"move",
-    "f":"zoom"
-}
-let elems = {
-    modeSwitches: {},
-    presets: [],
-}
+    mode: "",
+};
+let ui = {
+    palette: withEvents(createPalette({}, 256)),
+    canvas: null,
+    currTool: "",
+    currPreset: -1,
+    downPreset: -1,
+};
+ui.canvas = createGlview(ui.palette, sketch)
+ui.palette.loadImg("palette.png", ()=>{
+    ui.palette.trigger("change");
+});
 
-let currTool = "";
-let currPreset = -1;
-let downPreset = -1;
+let config = {
+    keymap: {
+        a: {mode: "draw"},
+        s: {mode: "erase"},
+        d: {mode: "move"},
+        f: {mode: "zoom"},
+    },
+};
+
 let rerender = false;
 
-let palette = withEvents(createPalette({}, 256));
-palette.loadImg("palette.png", ()=>{palette.trigger("change");setPreset(brush.palette[1]/32);});
 
-let sketch = withEvents(createSketch());
-
-let canvas = createGlview(palette, sketch);
-
-tools["eraser"] = createEraser(sketch);
-
-
-function opt(a, b) {
-    if (typeof a !== "undefined") {
-        return a;
-    }
-    return b;
+let modes = {
+    draw: createPen(),
+    erase: createEraser(sketch),
+    move: createMove(),
+    zoom: createZoom(),
 }
+
 
 function main(){
     requestAnimationFrame(main);
     if (!rerender) { return;}
-    canvas.render();
+    ui.canvas.render();
     rerender = false;
+}
+
+function updateCursor(e, {p}) {
+    return {
+        p: [e.pageX, e.pageY],
+        p0: p,
+        d: [e.pageX - p[0], e.pageY - p[1]],
+    };
+}
+function runMode(ev) {
+    if (brush.mode in modes && ev in modes[brush.mode]) {
+        return modes[brush.mode][ev](brush, sketch);
+    }
+    return {}
 }
 
 function down(e){
     if (e.button != 0){return;}
     e.preventDefault();
-    brush.down=true;
-    brush.p[0] = brush.p0[0] = e.pageX;
-    brush.p[1] = brush.p0[1] = e.pageY;
-    brush.d[0] = brush.d[1] = 0;
-    if (currTool in tools && "down" in tools[currTool]) {
-        tools[currTool].down({inputs: brush, sketch: sketch, view: canvas});
-    }
+    brush.down = true;
+    brush.cursor = updateCursor(e, brush.cursor);
+    runMode("down");
 }
 function up(e){
     if (!brush.down) {
         return;
     }
-    brush.down=false;
+    brush.down = false;
+    brush.cursor = updateCursor(e, brush.cursor);
     sketch.trigger("up");
-    if (currTool in tools && "up" in tools[currTool]) {
-       tools[currTool].up({inputs: brush, sketch: sketch, view: canvas});
-    }
+    runMode("up");
 }
 function move(e){
     if (!brush.down){return;}
-    brush.p0 = brush.p.slice();
-    brush.p[0] = e.pageX;
-    brush.p[1] = e.pageY;
-    brush.d[0] += brush.p[0] - brush.p0[0];
-    brush.d[1] += brush.p[1] - brush.p0[1];
-    if (Math.abs(brush.d[0]) < 1 
-            && Math.abs(brush.d[1]) < 1){
+    brush.cursor = updateCursor(e, brush.cursor);
+    if (Math.abs(brush.cursor.d[0]) < 1 
+            && Math.abs(brush.cursor.d[1]) < 1){
         return;
     }
     rerender = true;
-    if (currTool in tools && "move" in tools[currTool]) {
-        tools[currTool].move({inputs: brush, sketch: sketch, view: canvas});
-    }
-    brush.d[0] = 0;
-    brush.d[1] = 0;
+    runMode("move");
 }
 
-function changeTool(newTool){
-    if (newTool === currTool) {return;}
+function setMode(mode){
+    if (mode === brush.mode) {return;}
     if (brush.down) {
-        up();
+        up({pageX: brush.cursor.p[0],
+            pageY: brush.cursor.p[1]});
     }
-    if (elems.modeSwitches[currTool]) {
-        elems.modeSwitches[currTool].classList.remove("active");
-    }
-    currTool = newTool;
-    elems.modeSwitches[currTool].classList.add("active");
-}
-function switchPreset(newPreset) {
-    if (elems.presets[currPreset]) {
-        elems.presets[currPreset].classList.remove("active");
-    }
-    currPreset = newPreset;
-    brush.palette[0] = newPreset*32 + 16;
-    elems.presets[currPreset].classList.add("active");
-}
-function setPreset(newValue) {
-    palette.shiftTo([0, -newValue*32]);
-    brush.palette[1] = newValue*32;
-    rerender = true;
-    for (let i = 0; i < 8; i ++) {
-        let color = palette.color([i*32 + 16, newValue*32]);
-        elems.presets[i].setAttribute("style", `--active:rgba(${color[0]},${color[1]},${color[2]},${color[3]})`);
-    }
+    brush.mode = mode;
 }
 
-function presetColors(colors) {
-    for (let i in colors) {
-        elems.presets[i].setAttribute("style", "--active:"+colors[i]);
+function toKey(e) {
+    if (e.code.startsWith("Key")
+        || e.code.startsWith("Digit")
+        || e.code.startsWith("Numpad")) {
+        return e.code.slice(e.code.length - 1).toLowerCase();
     }
+    return ""
 }
-
 function keyDown(e){
     if (e.repeat){return;}
 
-    if (e.key in keymap){
-        changeTool(keymap[e.key]);
+    let key = toKey(e);
+    if (!(key in config.keymap)){
         return;
     }
 
-    if (e.code.startsWith("Digit") || e.code.startsWith("Numpad")) {
-        let val = parseInt(e.code.slice(e.code.length-1)) - 1;
-        if (e.shiftKey) {
-            setPreset(val);
-        } else {
-            switchPreset(val);
-        }
+    if (config.keymap[key].mode) {
+        setMode(config.keymap[key].mode);
+        return;
     }
 }
 function keyUp(e){
-    if (e.key in keymap){
-        changeTool("pen");
+    let key = toKey(e);
+    if (key in config.keymap && config.keymap[key].mode) {
+        setMode("draw");
     }
 }
 
 function init(){
     console.log("init");
     document.body.addEventListener("contextmenu", (e) => {e.preventDefault();});
-    document.body.appendChild(canvas.domElement);
-    window.addEventListener("resize", ()=>(canvas.resize()));
+    document.body.appendChild(ui.canvas.domElement);
+    window.addEventListener("resize", ()=>(ui.canvas.resize()));
 
-    canvas.domElement.addEventListener("pointerdown", down);
-    canvas.domElement.addEventListener("pointerup", up);
-    canvas.domElement.addEventListener("pointercancel", up);
-    canvas.domElement.addEventListener("pointerout", up);
-    canvas.domElement.addEventListener("pointerleave", up);
-    canvas.domElement.addEventListener("pointermove", move);
-    canvas.domElement.classList.add("canvas");
+    ui.canvas.domElement.addEventListener("pointerdown", down);
+    ui.canvas.domElement.addEventListener("pointerup", up);
+    ui.canvas.domElement.addEventListener("pointercancel", up);
+    ui.canvas.domElement.addEventListener("pointerout", up);
+    ui.canvas.domElement.addEventListener("pointerleave", up);
+    ui.canvas.domElement.addEventListener("pointermove", move);
+    ui.canvas.domElement.classList.add("canvas");
     document.body.addEventListener("keydown", keyDown);
     document.body.addEventListener("keyup", keyUp);
 
     let modeSwitches = document.getElementsByClassName("modeSwitch");
     for (let mode of modeSwitches){
-        elems.modeSwitches[mode.id] = mode;
         mode.addEventListener("pointerdown", (e) => {
             e.preventDefault();
-            changeTool(e.target.id);
+            setMode(e.target.id);
         });
         mode.addEventListener("pointerup", (e) => {
-            changeTool("pen");
+            setMode("draw");
         });
     }
-    changeTool("pen");
+    setMode("draw");
 
     let presetSwitches = document.getElementsByClassName("presetSwitch");
-    for (let i = 0; i < presetSwitches.length; i ++) {
-        elems.presets[i] = presetSwitches[i];
-        presetSwitches[i].addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            downPreset = i;
-        });
-        presetSwitches[i].addEventListener("pointerup", (e) => {
-            switchPreset(i);downPreset=-1;
-        });
-        presetSwitches[i].addEventListener("pointerleave", (e) => {
-            if (downPreset === i) {setPreset(i);}
-        });
-    }
-    switchPreset(0);
 
     document.getElementById("exportsvg").addEventListener("click", ()=>{
-        savesvg(exportsvg(sketch, palette))
+        savesvg(exportsvg(sketch, ui.palette))
     });
     document.getElementById("importsvg").addEventListener("change", (e)=>{
         let reader = new FileReader();
@@ -204,10 +171,10 @@ function init(){
         }
         reader.readAsText(file);
     });
-    canvas.resize();
+    ui.canvas.resize();
     main();
 
-    if ('serviceWorker' in navigator) {
+    /*if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register("worker.js")
         .then(function(reg) {
         // registration worked
@@ -216,7 +183,7 @@ function init(){
             // registration failed
             console.log('Registration failed with ' + error);
         });
-    }
+    }*/
 }
 
 document.addEventListener("DOMContentLoaded", init);

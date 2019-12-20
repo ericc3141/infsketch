@@ -4,30 +4,30 @@ const createPen = () => {
     let id = 0, idstr;
     let curr;
     return {
-        down: ({inputs, sketch, ...rest}) => {
+        down: (inputs, sketch) => {
             id ++;
             curr = {
                 type: "line",
-                points: [sketch.pix2sketch(inputs.p)],
+                points: [sketch.pix2sketch(inputs.cursor.p)],
                 width: inputs.weight / sketch.view.scale,
-                palette: inputs.palette.slice(),
+                palette: [0,0],
                 update: true
             };
             idstr = "line" + id;
             sketch.data[idstr] = curr;
             sketch.trigger("lineStart", idstr);
         },
-        move: ({inputs, sketch, ...rest}) => {
-            curr.points.push(sketch.pix2sketch(inputs.p));
+        move: (inputs, sketch) => {
+            curr.points.push(sketch.pix2sketch(inputs.cursor.p));
             sketch.trigger("lineAdd", idstr);
         },
-        up: ({inputs, sketch, ...rest}) => {
-            if (!(Math.abs(inputs.p[0] - inputs.p0[0] < 2)
-                    && Math.abs(inputs.p[1] - inputs.p0[1] < 2))) {
+        up: (inputs, sketch) => {
+            if (!(Math.abs(inputs.cursor.p[0] - inputs.cursor.p0[0] < 2)
+                    && Math.abs(inputs.cursor.p[1] - inputs.cursor.p0[1] < 2))) {
                 sketch.trigger("lineEnd", idstr);
                 return;
             }
-            curr.points.push(sketch.pix2sketch([inputs.p[0] + 5, inputs.p[1] + 5]));
+            curr.points.push(sketch.pix2sketch([inputs.cursor.p[0] + 5, inputs.cursor.p[1] + 5]));
             sketch.trigger("lineAdd", idstr);
             sketch.trigger("lineEnd", idstr);
         }
@@ -68,14 +68,14 @@ const createEraser = (sketch) => {
         delete bounds[name];
     }
     return {
-        move: ({inputs, sketch, ...rest}) => {
-            let p = sketch.pix2sketch(inputs.p);
+        move: (inputs, sketch) => {
+            let p = sketch.pix2sketch(inputs.cursor.p);
             let rad = inputs.weight * 20 / sketch.view.scale;
             for (let i in bounds) {
                 let b = bounds[i];
                 if (!(b[0] < p[0] + rad && p[0] - rad < b[2] 
                         && b[1] < p[1] + rad && p[1] - rad < b[3]
-                        && Math.floor(sketch.data[i].palette[1]/8) === Math.floor(inputs.palette[1]/8))) {
+                        && (sketch.data[i].palette[1] === 0))) {
                     continue;
                 }
                 let stroke = sketch.data[i];
