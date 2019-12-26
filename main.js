@@ -14,9 +14,7 @@ let brush = {
 let ui = {
     palette: createPalette({}, 256),
     view: null,
-    currTool: "",
-    currPreset: -1,
-    downPreset: -1,
+    modes: null,
 };
 
 let config = {
@@ -92,16 +90,13 @@ function brushMove(e){
 function setMode(mode){
     if (mode === brush.mode) {return;}
     if (brush.down) {
-        up({pageX: brush.cursor.p[0],
+        brushUp({pageX: brush.cursor.p[0],
             pageY: brush.cursor.p[1]});
     }
+    if (ui.modes) {
+        ui.modes.selectorText = "#" + mode;
+    }
     brush.mode = mode;
-}
-function modeDown(e) {
-    setMode(e.target.dataset.mode);
-}
-function modeUp(e) {
-    setMode("draw");
 }
 
 // Keyboard
@@ -161,9 +156,15 @@ function init(){
         e.preventDefault();
     });
 
-    let modes = document.getElementById("modes");
-    modes.addEventListener("pointerdown", modeDown);
-    modes.addEventListener("pointerup", modeUp);
+    requestText("panels/modes.svg").then(loadsvg).then((svg) => {
+        let modes = createPanel(svg.documentElement, ({mode}) => setMode(mode));
+        document.body.appendChild(modes);
+        let style = document.createElement("style");
+        modes.appendChild(style);
+        style.sheet.insertRule("#draw { --icon: var(--bg); --fill: var(--solid);}");
+        style.sheet.insertRule("#modes { --icon: var(--solid); --fill: var(--bg);}");
+        ui.modes = style.sheet.cssRules[1];
+    });
 
     setMode("draw");
 

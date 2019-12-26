@@ -20,11 +20,11 @@
 <style>
 
 :root {
-    --main: #EC3141;
-    --gray: #CCC;
-    --white: #FFF;
+    --solid: #EC3141;
+    --bg: #FFFFFF00;
     --block: 10vw;
 }
+
 @media (min-width: 640px) {
     :root {
         --block: 64px;
@@ -44,7 +44,6 @@ body{
     transition: all 0.1s ease;
     height:100%;
     font-size: 1.2em;
-    background-color: var(--gray);
     touch-action:none;
     user-select: none;
     overflow:hidden;
@@ -57,52 +56,26 @@ body{
     height:100%;
 }
 
-.panelVert, .panelHoriz {
+.panel {
     position: fixed;
     border: 1px solid var(--main);
     border-radius: .5em 0 .5em 0;
     overflow: hidden;
+    opacity: 0.5;
 }
-
-.controls {
-    padding: 0;
-    list-style: none;
-}
-.panelHoriz li {
-    display: inline-block;
+.panel:hover {
+    opacity: 1;
 }
 
 #modes {
     left: 0;
     top: var(--block);
 }
-button, .button {
-    --active: var(--main);
-    display: inline-block;
-    width: var(--block);
-    height: var(--block);
-    font-size: inherit;
-    text-align: center;
-    vertical-align: middle;
-    line-height: var(--block);
-    color: var(--active);
-    font-weight: bold;
-    background: none;
-    border: none;
-    mix-blend-mode: difference;
-}
-button:active, .active {
-    color: var(--white);
-    background-color: var(--active);
-}
 
 
-#panel {
+#controls {
     left: var(--block);
     top: 0;
-}
-#panel button {
-    border-top: calc(var(--block) / 8) solid var(--active);
 }
 
 #menu {
@@ -119,179 +92,7 @@ button:active, .active {
 
 <body>
 
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   id="modes"
-   class="panelVert"
-   version="1.1"
-   viewBox="0 0 16.933333 67.733336"
-   height="256"
-   width="64">
-  <defs
-     id="defs2">
-    <inkscape:path-effect
-       effect="skeletal"
-       id="path-effect4545"
-       is_visible="true"
-       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 Z"
-       copytype="single_stretched"
-       prop_scale="0.26458332"
-       scale_y_rel="false"
-       spacing="0"
-       normal_offset="0"
-       tang_offset="0"
-       prop_units="false"
-       vertical_pattern="false"
-       fuse_tolerance="0" />
-    <inkscape:path-effect
-       effect="skeletal"
-       id="path-effect4541"
-       is_visible="true"
-       pattern="M 0,5 C 0,2.24 2.24,0 5,0 7.76,0 10,2.24 10,5 10,7.76 7.76,10 5,10 2.24,10 0,7.76 0,5 Z"
-       copytype="single_stretched"
-       prop_scale="0.26458332"
-       scale_y_rel="false"
-       spacing="0"
-       normal_offset="0"
-       tang_offset="0"
-       prop_units="false"
-       vertical_pattern="false"
-       fuse_tolerance="0" />
-  </defs>
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="2"
-     inkscape:cx="22.495794"
-     inkscape:cy="-6.6377493"
-     inkscape:document-units="px"
-     inkscape:current-layer="layer2"
-     showgrid="true"
-     units="px"
-     showguides="true"
-     inkscape:window-width="795"
-     inkscape:window-height="838"
-     inkscape:window-x="2"
-     inkscape:window-y="59"
-     inkscape:window-maximized="1">
-    <inkscape:grid
-       type="xygrid"
-       id="grid4518"
-       spacingx="2.1166667"
-       spacingy="2.1166667"
-       empspacing="4"
-       dotted="false" />
-  </sodipodi:namedview>
-  <metadata
-     id="metadata5">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1"
-     transform="translate(0,-229.26665)">
-    <path
-       style="fill:none;stroke:#030303;stroke-width:2.11665773;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 3.1749911,242.27661 v -3.17501 l 7.4082689,-7.40832 3.174971,3.175 -7.4082677,7.40833 z"
-       id="path4539"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccccc" />
-    <path
-       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.05832875px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 8.4666114,264.50163 -6.3499444,6.35 6.3499444,6.35 6.3499446,-6.35 z m -2.1166481,4.23333 H 10.58326 v 4.23333 H 6.3499633 Z"
-       id="path4639"
-       inkscape:connector-curvature="0" />
-    <path
-       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.05832875px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 9.5249355,248.62663 -7.4082685,7.40833 4.2332963,4.23333 h 2.1166481 l 6.3499446,-6.35 z m -3.1749722,5.29166 3.1749722,3.175 -2.1166482,2.11667 -3.1749721,-3.175 z"
-       id="path4537"
-       inkscape:connector-curvature="0" />
-    <ellipse
-       style="opacity:0.98999999;fill:none;fill-opacity:1;stroke:#030303;stroke-width:2.64582205;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="path4555"
-       cx="7.408287"
-       cy="286.72668"
-       rx="3.9687152"
-       ry="3.9687507" />
-    <path
-       style="fill:none;stroke:#000000;stroke-width:2.11665773;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 14.816556,294.13497 9.5249352,288.84329"
-       id="path4559"
-       inkscape:connector-curvature="0" />
-  </g>
-  <g
-     inkscape:groupmode="layer"
-     id="layer2"
-     inkscape:label="Layer 2"
-     transform="translate(0,50.8)">
-    <rect
-       style="opacity:0.98999999;fill:#000000;fill-opacity:0;stroke:none;stroke-width:1.05833328;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4546"
-       width="16.933334"
-       height="16.933334"
-       x="0"
-       y="-50.799999"
-       data-mode="draw" />
-    <rect
-       style="opacity:0.98999999;fill:#000000;fill-opacity:0;stroke:none;stroke-width:1.05833328;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4546-3"
-       width="16.933334"
-       height="16.933334"
-       x="0"
-       y="-33.866669"
-       data-mode="erase" />
-    <rect
-       style="opacity:0.98999999;fill:#000000;fill-opacity:0;stroke:none;stroke-width:1.05833328;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4546-6"
-       width="16.933334"
-       height="16.933334"
-       x="0"
-       y="-16.933332"
-       data-mode="move" />
-    <rect
-       style="opacity:0.98999999;fill:#000000;fill-opacity:0;stroke:none;stroke-width:1.05833328;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4546-7"
-       width="16.933334"
-       height="16.933334"
-       x="0"
-       y="8.0000001e-07"
-       data-mode="zoom" />
-  </g>
-</svg>
-
-<ul class="panelHoriz controls" id="panel">
-    <li> <button class="presetSwitch" >1</button> </li
-    ><li> <button class="presetSwitch" >2</button> </li
-    ><li> <button class="presetSwitch" >3</button> </li
-    ><li> <button class="presetSwitch" >4</button> </li
-    ><li> <button class="presetSwitch" >5</button> </li
-    ><li> <button class="presetSwitch" >6</button> </li
-    ><li> <button class="presetSwitch" >7</button> </li
-    ><li> <button class="presetSwitch" >8</button> </li>
-</ul>
-
-<ul class="panelVert controls" id="menu">
-    <li> <button id="exportsvg" >S </button> </li
-    ><li> <label class="button" for="importsvg">I</label>
-        <input type="file" id="importsvg" /></li>
-</ul>
+<canvas class="canvas" id="canvas"></canvas>
 
 <canvas class="canvas" id="canvas"></canvas>
 
@@ -302,6 +103,7 @@ button:active, .active {
 <script src="sketch.js" ></script>
 <script src="glview.js" ></script>
 <script src="exportsvg.js" ></script>
+<script src="panel.js" ></script>
 <script src="main.js" ></script>
 
 </body>
