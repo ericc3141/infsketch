@@ -94,7 +94,7 @@ function setMode(mode){
             pageY: brush.cursor.p[1]});
     }
     if (ui.modes) {
-        ui.modes.selectorText = "#" + mode;
+        ui.modes.rules.active.selectorText = "#" + mode;
     }
     brush.mode = mode;
 }
@@ -157,13 +157,14 @@ function init(){
     });
 
     requestText("panels/modes.svg").then(loadsvg).then((svg) => {
-        let modes = createPanel(svg.documentElement, ({mode}) => setMode(mode));
-        document.body.appendChild(modes);
-        let style = document.createElement("style");
-        modes.appendChild(style);
-        style.sheet.insertRule("#draw { --icon: var(--bg); --fill: var(--solid);}");
-        style.sheet.insertRule("#modes { --icon: var(--solid); --fill: var(--bg);}");
-        ui.modes = style.sheet.cssRules[1];
+        ui.modes = createPanel(svg.documentElement, ({mode}) => setMode(mode));
+        document.body.appendChild(ui.modes.root);
+        ui.modes.newRule(
+            "#draw { --icon: var(--bg); --fill: var(--solid);}",
+            "active");
+        ui.modes.newRule(
+            ":root { --icon: var(--solid); --fill: var(--bg);}",
+            "vars");
     });
 
     setMode("draw");

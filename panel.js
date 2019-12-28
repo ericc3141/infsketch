@@ -8,9 +8,9 @@ const requestText = (url) => {
         return response.text();
     });
 }
-const createPanel = (svg, callback) => {
+const createPanel = (root, callback) => {
     let findData = (ev, node) => {
-        return (node === svg)
+        return (node === root)
             ? {}
             : (ev in node.dataset) 
                 ? JSON.parse(node.dataset[ev])
@@ -22,9 +22,18 @@ const createPanel = (svg, callback) => {
     let up = (e) => {
         callback(findData("up", e.target));
     }
-    svg.addEventListener("pointerdown", down);
-    svg.addEventListener("pointerup", up);
-    return svg;
+    root.addEventListener("pointerdown", down);
+    root.addEventListener("pointerup", up);
+
+    let styleElem = document.createElement("style");
+    root.appendChild(styleElem);
+    let rules = {}
+    let newRule = (rule, name) => {
+        let idx = styleElem.sheet.insertRule(rule);
+        rules[name] = styleElem.sheet.rules[idx];
+    }
+
+    return {root, newRule, rules};
 }
 
 
