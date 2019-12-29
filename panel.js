@@ -8,32 +8,39 @@ const requestText = (url) => {
         return response.text();
     });
 }
-const createPanel = (root, callback) => {
-    let findData = (ev, node) => {
-        return (node === root)
+class Panel extends HTMLElement {
+    constructor() {
+        super();
+        this.addEventListener("pointerdown", this.finder("down"));
+        this.addEventListener("pointerup", this.finder("up"));
+        this.rules = {};
+    }
+    connectedCallback() {
+        let styleElem = document.createElement("style");
+        this.appendChild(styleElem);
+        this.sheet = styleElem.sheet;
+    }
+
+    findData(tag, node) {
+        return (node === this)
             ? {}
-            : (ev in node.dataset) 
-                ? JSON.parse(node.dataset[ev])
-                : findData(ev, node.parentNode);
+            : (tag in node.dataset) 
+                ? JSON.parse(node.dataset[tag])
+                : this.findData(tag, node.parentNode);
     }
-    let down = (e) => {
-        callback(findData("down", e.target));
-    }
-    let up = (e) => {
-        callback(findData("up", e.target));
-    }
-    root.addEventListener("pointerdown", down);
-    root.addEventListener("pointerup", up);
-
-    let styleElem = document.createElement("style");
-    root.appendChild(styleElem);
-    let rules = {}
-    let newRule = (rule, name) => {
-        let idx = styleElem.sheet.insertRule(rule);
-        rules[name] = styleElem.sheet.rules[idx];
+    finder(tag) {
+        return (e) => {
+            this.dispatchEvent(new CustomEvent(
+                "action",
+                {detail: this.findData(tag, e.target)}
+            ));
+        }
     }
 
-    return {root, newRule, rules};
+    newRule(rule, name) {
+        let idx = this.sheet.insertRule(rule);
+        this.rules[name] = this.sheet.rules[idx];
+    }
 }
 
-
+customElements.define("inf-panel", Panel);
