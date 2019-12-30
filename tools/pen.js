@@ -2,15 +2,20 @@
 
 const createPen = () => {
     let id = 0, idstr;
+    let palette = [0, 0];
     let curr;
     return {
+        action: ({paletteX, paletteY}) => {
+            palette[0] = paletteX || palette[0];
+            palette[1] = paletteY || palette[1];
+        },
         down: (inputs, sketch) => {
             id ++;
             curr = {
                 type: "line",
                 points: [sketch.pix2sketch(inputs.cursor.p)],
                 width: inputs.weight / sketch.view.scale,
-                palette: [0,0],
+                palette: palette.slice(),
                 update: true
             };
             idstr = "line" + id;

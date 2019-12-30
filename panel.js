@@ -23,16 +23,18 @@ class Panel extends HTMLElement {
 
     findData(tag, node) {
         return (node === this)
-            ? {}
+            ? null
             : (tag in node.dataset) 
                 ? JSON.parse(node.dataset[tag])
                 : this.findData(tag, node.parentNode);
     }
     finder(tag) {
         return (e) => {
+            let data = this.findData(tag, e.target);
+            if (data === null) { return; }
             this.dispatchEvent(new CustomEvent(
                 "action",
-                {detail: this.findData(tag, e.target)}
+                {detail: data}
             ));
         }
     }

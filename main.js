@@ -15,6 +15,8 @@ let ui = {
     palette: createPalette({}, 256),
     view: null,
     modes: null,
+    controls: null,
+    menu: null,
 };
 
 let config = {
@@ -52,9 +54,9 @@ function updateCursor(e, {p}) {
         d: [e.pageX - p[0], e.pageY - p[1]],
     };
 }
-function runMode(ev) {
+function runMode(ev, ...args) {
     if (brush.mode in modes && ev in modes[brush.mode]) {
-        return modes[brush.mode][ev](brush, sketch);
+        return modes[brush.mode][ev](...args);
     }
     return {}
 }
@@ -64,7 +66,7 @@ function brushDown(e){
     e.preventDefault();
     brush.down = true;
     brush.cursor = updateCursor(e, brush.cursor);
-    runMode("down");
+    runMode("down", brush, sketch);
 }
 function brushUp(e){
     if (!brush.down) {
@@ -73,7 +75,7 @@ function brushUp(e){
     brush.down = false;
     brush.cursor = updateCursor(e, brush.cursor);
     sketch.trigger("up");
-    runMode("up");
+    runMode("up", brush, sketch);
 }
 function brushMove(e){
     if (!brush.down){return;}
@@ -83,7 +85,7 @@ function brushMove(e){
         return;
     }
     rerender = true;
-    runMode("move");
+    runMode("move", brush, sketch);
 }
 
 // Mode switch
@@ -159,16 +161,25 @@ function init(){
     document.body.appendChild(ui.modes);
     ui.modes.addEventListener("action", ({detail}) => {setMode(detail.mode);});
     ui.modes.newRule(
-        "#draw { --icon: var(--bg); --fill: var(--solid);}",
+        "nop { --icon: var(--bg); --fill: var(--solid);}",
         "active");
-    ui.modes.newRule(
-        ":root { --icon: var(--solid); --fill: var(--bg);}",
-        "vars");
     requestText("panels/modes.svg").then(loadsvg).then((svg) => {
         ui.modes.appendChild(svg.documentElement);
     });
 
     setMode("draw");
+
+    ui.controls = new Panel();
+    ui.controls.id = "controls";
+    document.body.appendChild(ui.controls);
+    ui.controls.addEventListener("action", ({detail}) => {runMode("action", detail);} );
+    ui.controls.newRule(
+        "nop { --icon: var(--bg); --fill: var(--solid);}",
+        "active");
+    requestText("panels/controls.svg").then((response) => {
+        ui.controls.appendChild(loadsvg(response).documentElement);
+    });
+
 
     ui.palette.loadImg("palette.png", ()=>{
         ui.view.setPalette(ui.palette.cvs);

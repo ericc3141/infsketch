@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   width="512"
+   height="64"
+   viewBox="0 0 512 64.000003"
+   version="1.1"
+   id="svg8">
+  <defs
+     id="defs2" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     data-up="{&quot;paletteX&quot;: 0}"
+     id="b0">
+    <path
+       d="M 0,64 V 15.999999 L 48.000001,64 Z"
+       fill="var(--paletteX0)" />
+    <path
+       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
+       fill="var(--paletteY0)" />
+  </g>
+  <g
+     data-up="{&quot;paletteX&quot;: 1}"
+     id="b1"
+     transform="translate(64)">
+    <path
+       d="M 0,64 V 15.999999 L 48.000001,64 Z"
+       fill="var(--paletteX1)"
+       id="path4800" />
+    <path
+       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
+       fill="var(--paletteY0)"
+       id="path4802" />
+  </g>
+  <g
+     data-up="{&quot;paletteX&quot;: 2}"
+     id="b2"
+     transform="translate(128)">
+    <path
+       d="M 0,64 V 15.999999 L 48.000001,64 Z"
+       fill="var(--paletteX0)"
+       id="path4800-7" />
+    <path
+       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
+       fill="var(--paletteY0)"
+       id="path4802-5" />
+  </g>
+  <g
+     data-up="{&quot;paletteX&quot;: 3}"
+     id="b3"
+     transform="translate(192)">
+    <path
+       d="M 0,64 V 15.999999 L 48.000001,64 Z"
+       fill="var(--paletteX0)"
+       id="path4800-6" />
+    <path
+       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
+       fill="var(--paletteY0)"
+       id="path4802-2" />
+  </g>
+  <g
+     data-up="{&quot;paletteX&quot;: 4}"
+     id="b4"
+     transform="translate(256.00001)">
+    <path
+       d="M 0,64 V 15.999999 L 48.000001,64 Z"
+       fill="var(--paletteX0)"
+       id="path4800-1" />
+    <path
+       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
+       fill="var(--paletteY0)"
+       id="path4802-27" />
+  </g>
+  <g
+     data-up="{&quot;paletteX&quot;: 5}"
+     id="b5"
+     transform="translate(320.00001)">
+    <path
+       d="M 0,64 V 15.999999 L 48.000001,64 Z"
+       fill="var(--paletteX0)"
+       id="path4800-9" />
+    <path
+       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
+       fill="var(--paletteY0)"
+       id="path4802-3" />
+  </g>
+  <g
+     data-up="{&quot;paletteX&quot;: 6}"
+     id="b6"
+     transform="translate(384.00001)">
+    <path
+       d="M 0,64 V 15.999999 L 48.000001,64 Z"
+       fill="var(--paletteX0)"
+       id="path4800-62" />
+    <path
+       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
+       fill="var(--paletteY0)"
+       id="path4802-6" />
+  </g>
+  <g
+     data-up="{&quot;paletteX&quot;: 7}"
+     id="b7"
+     transform="translate(448.00001)">
+    <path
+       d="M 0,64 V 15.999999 L 48.000001,64 Z"
+       fill="var(--paletteX0)"
+       id="path4800-8" />
+    <path
+       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
+       fill="var(--paletteY0)"
+       id="path4802-7" />
+  </g>
+</svg>

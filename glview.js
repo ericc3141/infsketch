@@ -37,13 +37,7 @@ const createGlview = (cvs, sketch) => {
     out vec4 o_color;
 
     void main() {
-        //o_color = vec4(1, 0, 0.5, 1);
-        //o_color = vec4(v_paletteCoord, 1, 1);
-        if (v_paletteCoord.x < 0. || v_paletteCoord.y < 0.) {
-            o_color = vec4(0, 0, 0, 0);
-        } else {
-            o_color = texture(u_palette, (v_paletteCoord + u_paletteOffset)/256.);
-        }
+        o_color = texture(u_palette, (v_paletteCoord + u_paletteOffset)/8.);
     }
     `;
 
