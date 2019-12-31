@@ -5,9 +5,14 @@ const createPen = () => {
     let palette = [0, 0];
     let curr;
     return {
+        palette,
         action: ({paletteX, paletteY}) => {
-            palette[0] = paletteX || palette[0];
-            palette[1] = paletteY || palette[1];
+            palette[0] = (typeof paletteX === "undefined") ? palette[0] : paletteX;
+            palette[1] = (typeof paletteY === "undefined") ? palette[1] : paletteY;
+            return {
+                paletteX: ".paletteX"+palette[0],
+                paletteY: ".paletteY"+palette[1],
+            };
         },
         down: (inputs, sketch) => {
             id ++;

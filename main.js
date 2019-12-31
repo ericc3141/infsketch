@@ -12,7 +12,7 @@ let brush = {
     mode: "",
 };
 let ui = {
-    palette: createPalette({}, 256),
+    palette: createPalette({}, 8),
     view: null,
     modes: null,
     controls: null,
@@ -42,6 +42,7 @@ let modes = {
 function main(){
     requestAnimationFrame(main);
     if (!rerender) { return;}
+    updatePalette();
     ui.view.render();
     rerender = false;
 }
@@ -55,10 +56,16 @@ function updateCursor(e, {p}) {
     };
 }
 function runMode(ev, ...args) {
+    rerender = true;
+    let state;
     if (brush.mode in modes && ev in modes[brush.mode]) {
-        return modes[brush.mode][ev](...args);
+        state = modes[brush.mode][ev](...args);
     }
-    return {}
+    if (!state) { return; }
+    for (let i in state) {
+        if (!(i in ui.controls.rules)) { continue; }
+        ui.controls.rules[i].selectorText = state[i];
+    }
 }
 
 function brushDown(e){
@@ -84,7 +91,6 @@ function brushMove(e){
             && Math.abs(brush.cursor.d[1]) < 1){
         return;
     }
-    rerender = true;
     runMode("move", brush, sketch);
 }
 
@@ -97,6 +103,29 @@ function setMode(mode){
     }
     ui.modes.rules.active.selectorText = "#" + mode;
     brush.mode = mode;
+}
+
+function updatePalette() {
+    ui.view.setPalette(ui.palette.cvs);
+    let curr = modes.draw.palette;
+    let rgba = ui.palette.color(curr);
+    ui.controls.rules.palette.style.setProperty(
+        `--paletteCurr`,
+        `rgba(${rgba[0]},${rgba[1]},${rgba[2]},${rgba[3]})`
+    );
+    for (let i = 0; i < 8; i ++) {
+        let rgba = ui.palette.color([i, curr[1]]);
+        ui.controls.rules.palette.style.setProperty(
+            `--paletteX${i}`,
+            `rgba(${rgba[0]},${rgba[1]},${rgba[2]},${rgba[3]})`
+        );
+
+        rgba = ui.palette.color([curr[0], i]);
+        ui.controls.rules.palette.style.setProperty(
+            `--paletteY${i}`,
+            `rgba(${rgba[0]},${rgba[1]},${rgba[2]},${rgba[3]})`
+        );
+    }
 }
 
 // Keyboard
@@ -174,16 +203,16 @@ function init(){
     document.body.appendChild(ui.controls);
     ui.controls.addEventListener("action", ({detail}) => {runMode("action", detail);} );
     ui.controls.newRule(
-        "nop { --icon: var(--bg); --fill: var(--solid);}",
-        "active");
+        ":root { --fill-snd: var(--bg); --fill-prm: var(--bg); }",
+        "palette");
+    ui.controls.newRule( "nop { --fill-prm: var(--paletteCurr);}", "paletteX");
+    ui.controls.newRule( "nop { --fill-snd: var(--paletteCurr);}", "paletteY");
     requestText("panels/controls.svg").then((response) => {
         ui.controls.appendChild(loadsvg(response).documentElement);
     });
 
 
-    ui.palette.loadImg("palette.png", ()=>{
-        ui.view.setPalette(ui.palette.cvs);
-    });
+    ui.palette.loadImg("palette.png", updatePalette);
     ui.view.resize();
     main();
 

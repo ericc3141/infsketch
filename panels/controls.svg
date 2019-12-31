@@ -25,104 +25,186 @@
     </rdf:RDF>
   </metadata>
   <g
-     data-up="{&quot;paletteX&quot;: 0}"
-     id="b0">
+     id="g4754"
+     class="paletteX0 paletteY0"
+     data-up="{&quot;paletteX&quot;: 0}">
     <path
-       d="M 0,64 V 15.999999 L 48.000001,64 Z"
+       d="M 0,48 V 15.999999 L 48.000001,64 H 16 Z"
+       fill="var(--paletteY0)"
+       id="path4749" />
+    <path
+       d="M 0,64 V 48 l 16,16 z"
+       id="path4833"
+       fill="var(--fill-snd)" />
+    <path
+       id="path4782"
+       d="m 16,31.999999 -16,-16 V -1.6e-6 H 64.000002 V 64 H 48.000001 l -16,-16 16,-16.000001 -16,-16 z"
        fill="var(--paletteX0)" />
     <path
-       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
-       fill="var(--paletteY0)" />
+       id="path4780"
+       d="m 16,31.999999 16.000001,-16 16,16 -16,16.000001 z"
+       fill="var(--fill-prm)"
+       class="center" />
   </g>
   <g
+     id="g4754-3"
+     class="paletteX1 paletteY1"
      data-up="{&quot;paletteX&quot;: 1}"
-     id="b1"
      transform="translate(64)">
     <path
-       d="M 0,64 V 15.999999 L 48.000001,64 Z"
-       fill="var(--paletteX1)"
-       id="path4800" />
+       d="M 0,48 V 15.999999 L 48.000001,64 H 16 Z"
+       fill="var(--paletteY1)"
+       id="path4749-6" />
     <path
-       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
-       fill="var(--paletteY0)"
-       id="path4802" />
+       d="M 0,64 V 48 l 16,16 z"
+       id="path4833-7"
+       fill="var(--fill-snd)" />
+    <path
+       id="path4782-5"
+       d="m 16,31.999999 -16,-16 V -1.6e-6 H 64.000002 V 64 H 48.000001 l -16,-16 16,-16.000001 -16,-16 z"
+       fill="var(--paletteX1)" />
+    <path
+       id="path4780-3"
+       d="m 16,31.999999 16.000001,-16 16,16 -16,16.000001 z"
+       fill="var(--fill-prm)"
+       class="center" />
   </g>
   <g
+     id="g4754-5"
+     class="paletteX2 paletteY2"
      data-up="{&quot;paletteX&quot;: 2}"
-     id="b2"
      transform="translate(128)">
     <path
-       d="M 0,64 V 15.999999 L 48.000001,64 Z"
-       fill="var(--paletteX0)"
-       id="path4800-7" />
+       d="M 0,48 V 15.999999 L 48.000001,64 H 16 Z"
+       fill="var(--paletteY2)"
+       id="path4749-62" />
     <path
-       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
-       fill="var(--paletteY0)"
-       id="path4802-5" />
+       d="M 0,64 V 48 l 16,16 z"
+       id="path4833-9"
+       fill="var(--fill-snd)" />
+    <path
+       id="path4782-1"
+       d="m 16,31.999999 -16,-16 V -1.6e-6 H 64.000002 V 64 H 48.000001 l -16,-16 16,-16.000001 -16,-16 z"
+       fill="var(--paletteX2)" />
+    <path
+       id="path4780-2"
+       d="m 16,31.999999 16.000001,-16 16,16 -16,16.000001 z"
+       fill="var(--fill-prm)"
+       class="center" />
   </g>
   <g
+     id="g4754-7"
+     class="paletteX3 paletteY3"
      data-up="{&quot;paletteX&quot;: 3}"
-     id="b3"
      transform="translate(192)">
     <path
-       d="M 0,64 V 15.999999 L 48.000001,64 Z"
-       fill="var(--paletteX0)"
-       id="path4800-6" />
+       d="M 0,48 V 15.999999 L 48.000001,64 H 16 Z"
+       fill="var(--paletteY3)"
+       id="path4749-0" />
     <path
-       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
-       fill="var(--paletteY0)"
-       id="path4802-2" />
+       d="M 0,64 V 48 l 16,16 z"
+       id="path4833-93"
+       fill="var(--fill-snd)" />
+    <path
+       id="path4782-6"
+       d="m 16,31.999999 -16,-16 V -1.6e-6 H 64.000002 V 64 H 48.000001 l -16,-16 16,-16.000001 -16,-16 z"
+       fill="var(--paletteX3)" />
+    <path
+       id="path4780-0"
+       d="m 16,31.999999 16.000001,-16 16,16 -16,16.000001 z"
+       fill="var(--fill-prm)"
+       class="center" />
   </g>
   <g
+     id="g4754-6"
+     class="paletteX4 paletteY4"
      data-up="{&quot;paletteX&quot;: 4}"
-     id="b4"
-     transform="translate(256.00001)">
+     transform="translate(256)">
     <path
-       d="M 0,64 V 15.999999 L 48.000001,64 Z"
-       fill="var(--paletteX0)"
-       id="path4800-1" />
+       d="M 0,48 V 15.999999 L 48.000001,64 H 16 Z"
+       fill="var(--paletteY4)"
+       id="path4749-2" />
     <path
-       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
-       fill="var(--paletteY0)"
-       id="path4802-27" />
+       d="M 0,64 V 48 l 16,16 z"
+       id="path4833-6"
+       fill="var(--fill-snd)" />
+    <path
+       id="path4782-18"
+       d="m 16,31.999999 -16,-16 V -1.6e-6 H 64.000002 V 64 H 48.000001 l -16,-16 16,-16.000001 -16,-16 z"
+       fill="var(--paletteX4)" />
+    <path
+       id="path4780-7"
+       d="m 16,31.999999 16.000001,-16 16,16 -16,16.000001 z"
+       fill="var(--fill-prm)"
+       class="center" />
   </g>
   <g
-     data-up="{&quot;paletteX&quot;: 5}"
-     id="b5"
-     transform="translate(320.00001)">
-    <path
-       d="M 0,64 V 15.999999 L 48.000001,64 Z"
-       fill="var(--paletteX0)"
-       id="path4800-9" />
-    <path
-       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
-       fill="var(--paletteY0)"
-       id="path4802-3" />
-  </g>
-  <g
+     id="g4754-92"
+     class="paletteX6 paletteY6"
      data-up="{&quot;paletteX&quot;: 6}"
-     id="b6"
-     transform="translate(384.00001)">
+     transform="translate(384)">
     <path
-       d="M 0,64 V 15.999999 L 48.000001,64 Z"
-       fill="var(--paletteX0)"
-       id="path4800-62" />
+       d="M 0,48 V 15.999999 L 48.000001,64 H 16 Z"
+       fill="var(--paletteY6)"
+       id="path4749-28" />
     <path
-       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
-       fill="var(--paletteY0)"
-       id="path4802-6" />
+       d="M 0,64 V 48 l 16,16 z"
+       id="path4833-97"
+       fill="var(--fill-snd)" />
+    <path
+       id="path4782-36"
+       d="m 16,31.999999 -16,-16 V -1.6e-6 H 64.000002 V 64 H 48.000001 l -16,-16 16,-16.000001 -16,-16 z"
+       fill="var(--paletteX6)" />
+    <path
+       id="path4780-1"
+       d="m 16,31.999999 16.000001,-16 16,16 -16,16.000001 z"
+       fill="var(--fill-prm)"
+       class="center" />
   </g>
   <g
+     id="g4754-78"
+     class="paletteX7 paletteY7"
      data-up="{&quot;paletteX&quot;: 7}"
-     id="b7"
-     transform="translate(448.00001)">
+     transform="translate(448)">
     <path
-       d="M 0,64 V 15.999999 L 48.000001,64 Z"
-       fill="var(--paletteX0)"
-       id="path4800-8" />
+       d="M 0,48 V 15.999999 L 48.000001,64 H 16 Z"
+       fill="var(--paletteY7)"
+       id="path4749-4" />
     <path
-       d="M 0,15.999999 V -1.6e-6 H 64.000002 V 64 H 48.000001 Z"
-       fill="var(--paletteY0)"
-       id="path4802-7" />
+       d="M 0,64 V 48 l 16,16 z"
+       id="path4833-5"
+       fill="var(--fill-snd)" />
+    <path
+       id="path4782-0"
+       d="m 16,31.999999 -16,-16 V -1.6e-6 H 64.000002 V 64 H 48.000001 l -16,-16 16,-16.000001 -16,-16 z"
+       fill="var(--paletteX7)" />
+    <path
+       id="path4780-36"
+       d="m 16,31.999999 16.000001,-16 16,16 -16,16.000001 z"
+       fill="var(--fill-prm)"
+       class="center" />
+  </g>
+  <g
+     id="g4754-78-1"
+     class="paletteX5 paletteY5"
+     data-up="{&quot;paletteX&quot;: 5}"
+     transform="translate(320)">
+    <path
+       d="M 0,48 V 15.999999 L 48.000001,64 H 16 Z"
+       fill="var(--paletteY5)"
+       id="path4749-4-0" />
+    <path
+       d="M 0,64 V 48 l 16,16 z"
+       id="path4833-5-6"
+       fill="var(--fill-snd)" />
+    <path
+       id="path4782-0-3"
+       d="m 16,31.999999 -16,-16 V -1.6e-6 H 64.000002 V 64 H 48.000001 l -16,-16 16,-16.000001 -16,-16 z"
+       fill="var(--paletteX5)" />
+    <path
+       id="path4780-36-2"
+       d="m 16,31.999999 16.000001,-16 16,16 -16,16.000001 z"
+       fill="var(--fill-prm)"
+       class="center" />
   </g>
 </svg>
