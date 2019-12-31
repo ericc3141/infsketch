@@ -107,24 +107,21 @@ function setMode(mode){
 
 function updatePalette() {
     ui.view.setPalette(ui.palette.cvs);
-    let curr = modes.draw.palette;
-    let rgba = ui.palette.color(curr);
-    ui.controls.rules.palette.style.setProperty(
-        `--paletteCurr`,
-        `rgba(${rgba[0]},${rgba[1]},${rgba[2]},${rgba[3]})`
-    );
-    for (let i = 0; i < 8; i ++) {
-        let rgba = ui.palette.color([i, curr[1]]);
-        ui.controls.rules.palette.style.setProperty(
-            `--paletteX${i}`,
-            `rgba(${rgba[0]},${rgba[1]},${rgba[2]},${rgba[3]})`
-        );
 
-        rgba = ui.palette.color([curr[0], i]);
-        ui.controls.rules.palette.style.setProperty(
-            `--paletteY${i}`,
-            `rgba(${rgba[0]},${rgba[1]},${rgba[2]},${rgba[3]})`
-        );
+    let controlsStyle = ui.controls.rules.palette.style;
+    let updateProp = (prop, [r,g,b,a]) => {
+        
+        let rgbastr = `rgba(${r},${g},${b},${a})`
+        if (controlsStyle.getPropertyValue(prop) === rgbastr) { return; }
+        console.log(rgbastr);
+        controlsStyle.setProperty( prop, rgbastr);
+    }
+
+    let curr = modes.draw.palette;
+    updateProp("--paletteCurr", ui.palette.color(curr));
+    for (let i = 0; i < 8; i ++) {
+        updateProp(`--paletteX${i}`, ui.palette.color([i, curr[1]]));
+        updateProp(`--paletteY${i}`, ui.palette.color([curr[0], i]));
     }
 }
 
