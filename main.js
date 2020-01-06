@@ -26,6 +26,10 @@ let config = {
         d: {mode: "move"},
         f: {mode: "zoom"},
     },
+    controls: {
+        draw: "panels/draw.svg",
+        move: "panels/move.svg",
+    },
 };
 
 let rerender = false;
@@ -101,7 +105,8 @@ function setMode(mode){
         brushUp({pageX: brush.cursor.p[0],
             pageY: brush.cursor.p[1]});
     }
-    ui.modes.rules.active.selectorText = "#" + mode;
+    ui.modes.rules.activeButton.selectorText = "#" + mode;
+    ui.controls.rules.activeControls.selectorText = "#controls ." + mode;
     brush.mode = mode;
 }
 
@@ -113,7 +118,6 @@ function updatePalette() {
         
         let rgbastr = `rgba(${r},${g},${b},${a})`
         if (controlsStyle.getPropertyValue(prop) === rgbastr) { return; }
-        console.log(rgbastr);
         controlsStyle.setProperty( prop, rgbastr);
     }
 
@@ -187,13 +191,11 @@ function init(){
     document.body.appendChild(ui.modes);
     ui.modes.addEventListener("action", ({detail}) => {setMode(detail.mode);});
     ui.modes.newRule(
-        "nop { --icon: var(--bg); --fill: var(--solid);}",
-        "active");
+        "#modes > nop { --icon: var(--bg); --fill: var(--solid);}",
+        "activeButton");
     requestText("panels/modes.svg").then(loadsvg).then((svg) => {
         ui.modes.appendChild(svg.documentElement);
     });
-
-    setMode("draw");
 
     ui.controls = new Panel();
     ui.controls.id = "controls";
@@ -204,10 +206,19 @@ function init(){
         "palette");
     ui.controls.newRule( "nop { --fill-prm: var(--paletteCurr);}", "paletteX");
     ui.controls.newRule( "nop { --fill-snd: var(--paletteCurr);}", "paletteY");
-    requestText("panels/controls.svg").then((response) => {
-        ui.controls.appendChild(loadsvg(response).documentElement);
-    });
+    ui.controls.newRule( "#controls > * { display:none;}", "hideall");
+    ui.controls.newRule( "#controls > nop { display:unset;}", "activeControls");
 
+    for (let control in config.controls) {
+        requestText(config.controls[control]).then((response) => {
+            let svgdoc = loadsvg(response).documentElement;
+            svgdoc.classList.add(control);
+            ui.controls.appendChild(svgdoc);
+        });
+    }
+
+
+    setMode("draw");
 
     ui.palette.loadImg("palette.png", updatePalette);
     ui.view.resize();
