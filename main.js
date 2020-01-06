@@ -29,6 +29,7 @@ let config = {
     controls: {
         draw: "panels/draw.svg",
         move: "panels/move.svg",
+        zoom: "panels/zoom.svg",
     },
 };
 
@@ -63,7 +64,7 @@ function runMode(ev, ...args) {
     rerender = true;
     let state;
     if (brush.mode in modes && ev in modes[brush.mode]) {
-        state = modes[brush.mode][ev](...args);
+        state = modes[brush.mode][ev](...args, sketch);
     }
     if (!state) { return; }
     for (let i in state) {
@@ -77,7 +78,7 @@ function brushDown(e){
     e.preventDefault();
     brush.down = true;
     brush.cursor = updateCursor(e, brush.cursor);
-    runMode("down", brush, sketch);
+    runMode("down", brush);
 }
 function brushUp(e){
     if (!brush.down) {
@@ -86,7 +87,7 @@ function brushUp(e){
     brush.down = false;
     brush.cursor = updateCursor(e, brush.cursor);
     sketch.trigger("up");
-    runMode("up", brush, sketch);
+    runMode("up", brush);
 }
 function brushMove(e){
     if (!brush.down){return;}
@@ -95,7 +96,7 @@ function brushMove(e){
             && Math.abs(brush.cursor.d[1]) < 1){
         return;
     }
-    runMode("move", brush, sketch);
+    runMode("move", brush);
 }
 
 // Mode switch
