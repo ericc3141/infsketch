@@ -1,6 +1,6 @@
 "use strict";
 
-const createPen = () => {
+export const createPen = () => {
     let id = 0, idstr;
     let curr;
     return {
@@ -34,7 +34,7 @@ const createPen = () => {
     }
 }
 
-const createEraser = (sketch) => {
+export const createEraser = (sketch) => {
     let bounds = {};
     sketch.on("lineStart", create);
     sketch.on("lineAdd", update);

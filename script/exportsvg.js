@@ -7,7 +7,7 @@ const SVG_DOCTYPE = document.implementation.createDocumentType('svg', "-//W3C//D
 /* Returns SVG element representing current view of sketch,
  * given a palette
  */
-function exportsvg(sketch, palette) {
+export function exportsvg(sketch, palette) {
 	let svgdoc = document.implementation.createDocument(SVG_NS, 'svg', SVG_DOCTYPE);
     let svg = svgdoc.documentElement;
 
@@ -65,7 +65,7 @@ function exportsvg(sketch, palette) {
     return svg;
 }
 
-function savesvg(svgdoc) {
+export function savesvg(svgdoc) {
 	let svgstr = (new XMLSerializer()).serializeToString(svgdoc);
 	let svgblob = new Blob([svgstr.replace(/></g, '>\n\r<')]);
 	let svgurl = URL.createObjectURL(svgblob);
@@ -78,7 +78,7 @@ function savesvg(svgdoc) {
 	URL.revokeObjectURL(svgurl);
 }
 
-function importsvg(sketch, svgdoc, name) {
+export function importsvg(sketch, svgdoc, name) {
     let id = 0;
     for (let elem of svgdoc.rootElement.children) {
         if (elem.tagName !== "polyline") {
@@ -109,7 +109,7 @@ function importsvg(sketch, svgdoc, name) {
     }
 }
 
-function loadsvg(svgstring) {
+export function loadsvg(svgstring) {
     let parser = new DOMParser();
     return parser.parseFromString(svgstring, "image/svg+xml");
 }

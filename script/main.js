@@ -1,5 +1,11 @@
 "use strict";
 
+import { withEvents, createSketch, createPalette } from "./sketch.js";
+import { createGlview } from "./glview.js";
+import { tools } from "./tools/tools.js";
+import { createEraser } from "./tools/pen.js";
+import { exportsvg, savesvg, importsvg, loadsvg } from "./exportsvg.js";
+
 let brush = {
     p: [0, 0], // position
     d: [0, 0], // delta

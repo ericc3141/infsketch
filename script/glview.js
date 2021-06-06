@@ -2,7 +2,9 @@
  */
 "use strict";
 
-const createGlview = (palette, sketch) => {
+import { createAlloc } from "./alloc.js";
+
+export const createGlview = (palette, sketch) => {
     const vs = `#version 300 es
 
     uniform float u_vheight;

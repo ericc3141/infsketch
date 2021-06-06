@@ -1,7 +1,7 @@
 "use strict";
 
 // Simple events mixin
-const withEvents = (o) => {
+export const withEvents = (o) => {
     let events = {};
     const on = (evt, func) => {
         if (!(evt in events)) {
@@ -21,7 +21,7 @@ const withEvents = (o) => {
     return Object.assign(o, {on, trigger});
 }
 
-const createSketch = () => ({
+export const createSketch = () => ({
     data: {},
     view: {
         center: [0, 0],
@@ -35,7 +35,7 @@ const createSketch = () => ({
     },
 })
 
-const createPalette = (o, size) => {
+export const createPalette = (o, size) => {
     const init_cvs = (size) => {
         let cvs = document.createElement("canvas");
         cvs.width = size; cvs.height = size;

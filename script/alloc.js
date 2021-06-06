@@ -5,7 +5,7 @@
 /* arr- array to allocate from
  * splitThresh- size threshold at which to bother splitting a free block
  */
-const createAlloc = ({arr, splitThresh = 32} = {}) => {
+export const createAlloc = ({arr, splitThresh = 32} = {}) => {
     // Sorted list of used and free blocks in format
     // [ptr, size]
     // ptr- index in memory where block starts
