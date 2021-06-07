@@ -2,13 +2,17 @@
 
 export const createMove = () => ({
     move: ({inputs, sketch, ...rest}) => {
-        sketch.view.center[0] -= inputs.d[0] / sketch.view.scale;
-        sketch.view.center[1] += inputs.d[1] / sketch.view.scale;
+        let current = sketch.center.get();
+        let scale = sketch.scale.get();
+        sketch.center.set([
+            current[0] - inputs.d[0] / scale,
+            current[1] + inputs.d[1] / scale,
+        ]);
     }
 });
 
 export const createZoom = () => ({
     move: ({inputs, sketch, ...rest}) => {
-        sketch.view.scale *= Math.exp(-inputs.d[1]/100);
+        sketch.scale.set(sketch.scale.get() * Math.exp(-inputs.d[1]/100));
     }
 })

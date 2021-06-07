@@ -49,11 +49,8 @@ export const createGlview = (palette, sketch) => {
     }
     `;
 
-    sketch.on("lineStart", create);
-    sketch.on("lineAdd", draw);
-    sketch.on("lineEnd", checkFree);
-    sketch.on("lineRemove", remove);
-    sketch.on("lineImport", importLine);
+    sketch.lines.onAdd(create);
+    sketch.lines.onRemove(remove);
 
     // Buffer for attributes
     // Each point gets 4 values: [x, y, palettex, palettey]
@@ -61,7 +58,7 @@ export const createGlview = (palette, sketch) => {
     let allocator = createAlloc({arr: strokes});
     // Object for tracking how much we've allocated for each stroke
     // contains- id: [ptr, size]
-    let allocs = {};
+    let allocs = new Map();
 
     // Ranges that must be re-uploaded to GPU
     // in format [ptr, size]
@@ -152,30 +149,14 @@ export const createGlview = (palette, sketch) => {
         }
 //         gl.bufferData(gl.ARRAY_BUFFER, strokes, gl.DYNAMIC_DRAW);
         // Update uniforms
-        uniforms.u_center[0] = sketch.view.center[0];
-        uniforms.u_center[1] = sketch.view.center[1];
-        uniforms.u_scale = sketch.view.scale * window.devicePixelRatio;
+        uniforms.u_center[0] = sketch.center.get()[0];
+        uniforms.u_center[1] = sketch.center.get()[1];
+        uniforms.u_scale = sketch.scale.get() * window.devicePixelRatio;
         uniforms.u_paletteOffset[0] = palette.offset[0];
         uniforms.u_paletteOffset[1] = palette.offset[1];
         twgl.setUniforms(programInfo, uniforms);
         // Draw
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, strokes.length / 4);
-    }
-
-    /* Handle creation of stroke
-     * Allocates memory, and adds starting points.
-     * Assumes line already has one point in it.
-     */
-    function create(sketch, name) {
-        let line = sketch.data[name];
-        let ptr = allocator.alloc(96)
-        allocs[name] = [ptr, 96];
-        // Since rendering triangle strip,
-        // need 2 points to connect previous stroke with
-        // degenerate triangle
-        addPoint(line.points[0], line, ptr);
-        addPoint(line.points[0], line, ptr+4);
-        addUpdate(ptr, 8);
     }
 
     /* Records new range to update.
@@ -221,37 +202,40 @@ export const createGlview = (palette, sketch) => {
         addPoint([coord[0]+norm[0], coord[1]+norm[1]], style, idx+4);
     }
 
-    function importLine(sketch, name) {
-        let line = sketch.data[name];
-        let size = line.points.length * 8 + 4*4;
+    function create(line) {
+        let size = line.points.get().length * 8 + 4*4;
         let ptr = allocator.alloc(size)
-        allocs[name] = [ptr, size];
         addUpdate(ptr, size);
 
-        addPoint(line.points[0], line, ptr);
-        addPoint(line.points[0], line, ptr+4);
-        for (let i = 1; i < line.points.length; i ++) {
-            addLine(line.points[i-1], line.points[i], line, ptr + i*8);
+        let points = line.points.get();
+        addPoint(points[0], line, ptr);
+        addPoint(points[0], line, ptr+4);
+        for (let i = 1; i < points.length; i ++) {
+            addLine(points[i-1], points[i], line, ptr + i*8);
         }
-        addPoint(line.points[line.points.length-1], line, ptr + line.points.length*8);
-        addPoint(line.points[line.points.length-1], line, ptr + line.points.length*8+4);
+        addPoint(points[points.length-1], line, ptr + points.length*8);
+        addPoint(points[points.length-1], line, ptr + points.length*8+4);
+
+        let uPush = line.points.onPush((coords) => draw(line, coords));
+        let uEnd = line.onEnd(() => checkFree(line));
+        allocs.set(line, [ptr, size, uPush, uEnd]);
     }
 
     /* Handle drawing
      * Assumes one point has been added to line.
      */
-    function draw (sketch, name) {
-        let line = sketch.data[name];
-        if (line["points"].length < 2) {
+    function draw (line, coords) {
+        let points = line.points.get();
+        if (points.length < 2) {
             return;
         }
-        let coord = line.points[line.points.length-1];
-        let prev = line.points[line.points.length-2];
+        let coord = points[points.length-1];
+        let prev = points[points.length-2];
         // Check if enough space allocated
-        let block = allocs[name];
+        let block = allocs.get(line);
         // Need extra space for 4 points 
         // (starting and ending degenerate triangles)
-        if (line.points.length * 8 + 4*4> block[1]) {
+        if (points.length * 8 + 4*4> block[1]) {
             addUpdate(block[0], block[1]);
             // Double size of allocation
             let newalloc = allocator.realloc(block[0], block[1] * 2);
@@ -263,7 +247,7 @@ export const createGlview = (palette, sketch) => {
             block[1] *= 2;
             addUpdate(block[0], block[1]);
         }
-        let idx = block[0] + line.points.length * 8 - 8;
+        let idx = block[0] + points.length * 8 - 8;
         addLine(prev, coord, line, idx);
         // Need to cap off with 2 points to form degenerate triangle
         addPoint(coord, line, idx+8);
@@ -274,21 +258,24 @@ export const createGlview = (palette, sketch) => {
     /* Handle removal of line
      * Frees associated block.
      */
-    function remove (sketch, name) {
-        let line = sketch.data[name];
-        let alloc = allocs[name];
+    function remove (line) {
+        let alloc = allocs.get(line);
         allocator.free(alloc[0]);
         addUpdate(alloc[0], alloc[1]);
-        delete allocs[name];
+        alloc[2]();
+        alloc[3]();
+        allocs.delete(name);
     }
 
-    function checkFree(sketch, name) {
+    function checkFree(line) {
+        let len = line.points.get().length;
         // Trim away unused space
-        let minsize = sketch.data[name].points.length * 8 + 4*4;
-        let shrunk = allocator.realloc(allocs[name][0], minsize);
+        let minsize = len * 8 + 4*4;
+        let alloc = allocs.get(line);
+        let shrunk = allocator.realloc(alloc[0], minsize);
         if (!(shrunk < 0)) {
-            allocs[name][0] = shrunk;
-            allocs[name][1] = minsize;
+            alloc[0] = shrunk;
+            alloc[1] = minsize;
         }
         if (allocator.stats.free > allocator.stats.size / 16) {
             return;

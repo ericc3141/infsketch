@@ -1,5 +1,7 @@
 "use strict";
 
+import { emitter, changeable, list, set } from "./util.js";
+
 // Simple events mixin
 export const withEvents = (o) => {
     let events = {};
@@ -21,19 +23,70 @@ export const withEvents = (o) => {
     return Object.assign(o, {on, trigger});
 }
 
-export const createSketch = () => ({
-    data: {},
-    view: {
-        center: [0, 0],
-        scale: 1,
-    },
-    pix2sketch: function pix2sketch(pix) {
-        return [
-            (pix[0] - window.innerWidth/2) / this.view.scale + this.view.center[0],
-            (window.innerHeight/2 - pix[1]) / this.view.scale + this.view.center[1]
-        ];
-    },
-})
+let line = (props, initpoints) => {
+    if (initpoints.length < 1) { throw new Error("line requires points"); }
+    let points = list(initpoints);
+    let min = [...initpoints[0]];
+    let max = [...initpoints[0]];
+
+    let updateBounds = (coords) => {
+        for (let c of coords) {
+            if (c[0] < min[0]) { min[0] = c[0]; }
+            if (c[0] > max[0]) { max[0] = c[0]; }
+            if (c[1] < min[1]) { min[1] = c[1]; }
+            if (c[1] > max[1]) { max[1] = c[1]; }
+        }
+    };
+    updateBounds(initpoints);
+    points.onPush(updateBounds);
+
+    let nearBound = (coord, threshold) => {
+        return coord[0] >= min[0]-threshold &&
+            coord[0] <= max[0]+threshold &&
+            coord[1] >= min[1]-threshold &&
+            coord[1] <= max[1]+threshold;
+    }
+    let nearPoints = (coord, threshold) => {
+        for (let p of points.get()) {
+            if (Math.abs(p[0] - coord[0]) <= threshold &&
+                Math.abs(p[1] - coord[1]) <= threshold
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+    let isNear = (coord, threshold) => 
+        nearBound(coord, threshold) && nearPoints(coord, threshold);
+
+    let endEmitter = emitter();
+
+    return { ...props, isNear, points,
+        end: endEmitter.emit, onEnd: endEmitter.subscribe
+    };
+}
+
+export const createSketch = () => {
+    let lines = set();
+    let center = changeable([0, 0]);
+    let scale = changeable(1);
+
+    let pix2sketch = (pix) => ([
+        (pix[0] - window.innerWidth/2) / scale.get() + center.get()[0],
+        (window.innerHeight/2 - pix[1]) / scale.get() + center.get()[1],
+    ])
+    let createLine = (style, coords) => {
+        let created = line(style, coords);
+        lines.add(created);
+        return created;
+    }
+
+    return {
+        lines, center, scale,
+        createLine,
+        pix2sketch,
+    };
+}
 
 export const createPalette = (o, size) => {
     const init_cvs = (size) => {
