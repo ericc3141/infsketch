@@ -1,16 +1,15 @@
 "use strict";
 
+let { partition } = rxjs;
+
 import { withEvents, createSketch, createPalette } from "./sketch.js";
 import { createGlview } from "./glview.js";
 import { tools } from "./tools/tools.js";
 import { createEraser } from "./tools/pen.js";
 import { exportsvg, savesvg, importsvg, loadsvg } from "./exportsvg.js";
+import * as inputs from "./inputs.js";
 
 let brush = {
-    p: [0, 0], // position
-    d: [0, 0], // delta
-    p0: [0, 0],// start position
-    "down":false,
     weight: 1,
     palette: [0, 0],
 }
@@ -54,45 +53,32 @@ function main(){
     rerender = false;
 }
 
-function down(e){
-    if (e.button != 0){return;}
-    e.preventDefault();
-    brush.down=true;
-    brush.p[0] = brush.p0[0] = e.pageX;
-    brush.p[1] = brush.p0[1] = e.pageY;
-    brush.d[0] = brush.d[1] = 0;
-    if (currTool in tools && "down" in tools[currTool]) {
-        tools[currTool].down({inputs: brush, sketch: sketch, view: canvas});
-    }
-}
-function up(e){
-    if (!brush.down) {
-        return;
-    }
-    brush.down=false;
-    sketch.trigger("up");
-    if (currTool in tools && "up" in tools[currTool]) {
-       tools[currTool].up({inputs: brush, sketch: sketch, view: canvas});
-    }
-}
-function move(e){
-    if (!brush.down){return;}
-    brush.p0 = brush.p.slice();
-    brush.p[0] = e.pageX;
-    brush.p[1] = e.pageY;
-    brush.d[0] += brush.p[0] - brush.p0[0];
-    brush.d[1] += brush.p[1] - brush.p0[1];
-    if (Math.abs(brush.d[0]) < 1 
-            && Math.abs(brush.d[1]) < 1){
-        return;
-    }
-    rerender = true;
-    if (currTool in tools && "move" in tools[currTool]) {
-        tools[currTool].move({inputs: brush, sketch: sketch, view: canvas});
-    }
-    brush.d[0] = 0;
-    brush.d[1] = 0;
-}
+let brushSubscriber = {
+    next: (stroke) => {
+        let [first, rest] = partition(stroke, (_, idx) => idx === 0);
+        first.subscribe({
+            next: (b) => {
+                if (currTool in tools && "down" in tools[currTool]) {
+                    tools[currTool].down({inputs: {...b, ...brush}, sketch: sketch, view: canvas});
+                }
+            },
+        });
+        rest.subscribe({
+            next: (b) => {
+                rerender = true;
+                if (currTool in tools && "move" in tools[currTool]) {
+                    tools[currTool].move({inputs: {...b, ...brush}, sketch: sketch, view: canvas});
+                }
+            },
+            complete: () => {
+                sketch.trigger("up");
+                if (currTool in tools && "up" in tools[currTool]) {
+                   tools[currTool].up({inputs: brush, sketch: sketch, view: canvas});
+                }
+            },
+        });
+    },
+};
 
 function changeTool(newTool){
     if (newTool === currTool) {return;}
@@ -158,12 +144,9 @@ function init(){
     document.body.appendChild(canvas.domElement);
     window.addEventListener("resize", ()=>(canvas.resize()));
 
-    canvas.domElement.addEventListener("pointerdown", down);
-    canvas.domElement.addEventListener("pointerup", up);
-    canvas.domElement.addEventListener("pointercancel", up);
-    canvas.domElement.addEventListener("pointerout", up);
-    canvas.domElement.addEventListener("pointerleave", up);
-    canvas.domElement.addEventListener("pointermove", move);
+    let brushInput = inputs.brush(canvas.domElement);
+    brushInput.subscribe(brushSubscriber);
+
     canvas.domElement.classList.add("canvas");
     document.body.addEventListener("keydown", keyDown);
     document.body.addEventListener("keyup", keyUp);

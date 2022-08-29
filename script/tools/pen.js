@@ -22,13 +22,6 @@ export const createPen = () => {
             sketch.trigger("lineAdd", idstr);
         },
         up: ({inputs, sketch, ...rest}) => {
-            if (!(Math.abs(inputs.p[0] - inputs.p0[0] < 2)
-                    && Math.abs(inputs.p[1] - inputs.p0[1] < 2))) {
-                sketch.trigger("lineEnd", idstr);
-                return;
-            }
-            curr.points.push(sketch.pix2sketch([inputs.p[0] + 5, inputs.p[1] + 5]));
-            sketch.trigger("lineAdd", idstr);
             sketch.trigger("lineEnd", idstr);
         }
     }
