@@ -151,6 +151,7 @@ function init(){
     document.body.addEventListener("keydown", keyDown);
     document.body.addEventListener("keyup", keyUp);
 
+    let modeInput = inputs.modeSwitch(document.body);
     let modeSwitches = document.getElementsByClassName("modeSwitch");
     for (let mode of modeSwitches){
         elems.modeSwitches[mode.id] = mode;

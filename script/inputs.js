@@ -1,6 +1,8 @@
-let { Observable, of,  fromEvent, concat } = rxjs;
+let { Observable, of,  fromEvent, concat, merge } = rxjs;
 let { map, concatAll, share, first, windowToggle, pairwise } = rxjs;
 
+import { Ul, Li, Button, Text } from "./ui.js";
+import { withKey, forever, asObservable } from "./util.js";
 
 let fromPointerUp = (element) => new Observable((subscriber) => {
     let listener = (e) => subscriber.next(e);
@@ -68,3 +70,25 @@ export let brush = (element) => {
         windowToggle(pointerDown, (_) => pointerUp.pipe(first())),
     );
 };
+
+export let modeSwitch = (parent) => {
+    let buttons = ["pen", "eraser", "move", "zoom"].map(
+        (mode) => Li({
+            children: [Button({
+                "class": "modeSwitch",
+                id: mode,
+                children: [Text({
+                    text: mode[0],
+                })],
+            })],
+        }),
+    );
+    let panel = Ul({
+        children: buttons,
+        "class": "panelVert controls",
+        id: "tools",
+    });
+    parent.appendChild(panel);
+
+    return of();
+}
