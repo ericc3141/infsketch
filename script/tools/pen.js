@@ -1,10 +1,10 @@
 "use strict";
 
-export const createPen = () => {
+export const createDraw = (sketch) => {
     let id = 0, idstr;
     let curr;
     return {
-        down: ({inputs, sketch, ...rest}) => {
+        down: (inputs) => {
             id ++;
             curr = {
                 type: "line",
@@ -17,17 +17,17 @@ export const createPen = () => {
             sketch.data[idstr] = curr;
             sketch.trigger("lineStart", idstr);
         },
-        move: ({inputs, sketch, ...rest}) => {
+        move: (inputs) => {
             curr.points.push(sketch.pix2sketch(inputs.p));
             sketch.trigger("lineAdd", idstr);
         },
-        up: ({inputs, sketch, ...rest}) => {
+        up: (inputs) => {
             sketch.trigger("lineEnd", idstr);
         }
     }
 }
 
-export const createEraser = (sketch) => {
+export const createErase = (sketch) => {
     let bounds = {};
     sketch.on("lineStart", create);
     sketch.on("lineAdd", update);
@@ -61,7 +61,7 @@ export const createEraser = (sketch) => {
         delete bounds[name];
     }
     return {
-        move: ({inputs, sketch, ...rest}) => {
+        move: (inputs) => {
             let p = sketch.pix2sketch(inputs.p);
             let rad = inputs.weight * 20 / sketch.view.scale;
             for (let i in bounds) {

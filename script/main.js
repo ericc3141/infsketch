@@ -5,8 +5,7 @@ let { merge, filter, map, distinctUntilChanged } = rxjs;
 
 import { withEvents, createSketch, createPalette } from "./sketch.js";
 import { createGlview } from "./glview.js";
-import { tools } from "./tools/tools.js";
-import { createEraser } from "./tools/pen.js";
+import { MODES, createModes } from "./tools/tools.js";
 import { exportsvg, savesvg, importsvg, loadsvg } from "./exportsvg.js";
 import * as inputs from "./inputs.js";
 import { withLatest } from "./util.js";
@@ -16,17 +15,17 @@ let brush = {
     palette: [0, 0],
 }
 let keymap = {
-    "a":"pen",
-    "s":"eraser",
-    "d":"move",
-    "f":"zoom"
+    "a":MODES.DRAW,
+    "s":MODES.ERASE,
+    "d":MODES.MOVE,
+    "f":MODES.ZOOM,
 }
 let elems = {
     modeSwitches: {},
     presets: [],
 }
 
-let modeSubject = new BehaviorSubject("pen");
+let modeSubject = new BehaviorSubject(MODES.DRAW);
 let currPreset = -1;
 let downPreset = -1;
 let rerender = false;
@@ -35,18 +34,9 @@ let palette = withEvents(createPalette({}, 256));
 palette.loadImg("palette.png", ()=>{palette.trigger("change");setPreset(brush.palette[1]/32);});
 
 let sketch = withEvents(createSketch());
+let modes = createModes(sketch);
 
 let canvas = createGlview(palette, sketch);
-
-tools["eraser"] = createEraser(sketch);
-
-
-function opt(a, b) {
-    if (typeof a !== "undefined") {
-        return a;
-    }
-    return b;
-}
 
 function main(){
     requestAnimationFrame(main);
@@ -61,22 +51,22 @@ let brushSubscriber = {
         let [first, rest] = partition(stroke, (_, idx) => idx === 0);
         first.subscribe({
             next: (b) => {
-                if (mode in tools && "down" in tools[mode]) {
-                    tools[mode].down({inputs: {...b, ...brush}, sketch: sketch, view: canvas});
+                if ("down" in modes[mode]) {
+                    modes[mode].down({...b, ...brush});
                 }
             },
         });
         rest.subscribe({
             next: (b) => {
                 rerender = true;
-                if (mode in tools && "move" in tools[mode]) {
-                    tools[mode].move({inputs: {...b, ...brush}, sketch: sketch, view: canvas});
+                if ("move" in modes[mode]) {
+                    modes[mode].move({...b, ...brush});
                 }
             },
             complete: () => {
                 sketch.trigger("up");
-                if (mode in tools && "up" in tools[mode]) {
-                   tools[mode].up({inputs: brush, sketch: sketch, view: canvas});
+                if ("up" in modes[mode]) {
+                   modes[mode].up(brush);
                 }
             },
         });
@@ -134,7 +124,7 @@ function init(){
     canvas.domElement.classList.add("canvas");
 
     let keyboardModeInput = inputs.keyboardMode(keymap, document.body);
-    let modePanel = inputs.ModePanel(["pen", "erase", "move", "zoom"], modeSubject);
+    let modePanel = inputs.ModePanel(Object.values(MODES), modeSubject);
     document.body.appendChild(modePanel.node);
     let press = merge(keyboardModeInput.press, modePanel.press);
     let release = merge(keyboardModeInput.release, modePanel.release);
@@ -143,12 +133,11 @@ function init(){
         release.pipe(
             withLatest(modeSubject),
             filter(([mode, active]) => mode === active),
-            map((_) => "pen"),
+            map((_) => MODES.DRAW),
         ),
     ).pipe(
         distinctUntilChanged(),
     ).subscribe(modeSubject);
-    modeSubject.subscribe({ next: console.log });
 
     let presetSwitches = document.getElementsByClassName("presetSwitch");
     for (let i = 0; i < presetSwitches.length; i ++) {
