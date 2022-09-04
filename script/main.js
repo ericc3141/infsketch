@@ -1,6 +1,7 @@
 "use strict";
 
 let { BehaviorSubject, partition } = rxjs;
+let { merge, filter, map, distinctUntilChanged } = rxjs;
 
 import { withEvents, createSketch, createPalette } from "./sketch.js";
 import { createGlview } from "./glview.js";
@@ -26,7 +27,6 @@ let elems = {
 }
 
 let modeSubject = new BehaviorSubject("pen");
-let currTool = "";
 let currPreset = -1;
 let downPreset = -1;
 let rerender = false;
@@ -83,18 +83,6 @@ let brushSubscriber = {
     },
 };
 
-function changeTool(newTool){
-    if (newTool === currTool) {return;}
-    if (brush.down) {
-        up();
-    }
-    if (elems.modeSwitches[currTool]) {
-        elems.modeSwitches[currTool].classList.remove("active");
-    }
-    currTool = newTool;
-    modeSubject.next(currTool);
-    elems.modeSwitches[currTool].classList.add("active");
-}
 function switchPreset(newPreset) {
     if (elems.presets[currPreset]) {
         elems.presets[currPreset].classList.remove("active");
@@ -122,11 +110,6 @@ function presetColors(colors) {
 function keyDown(e){
     if (e.repeat){return;}
 
-    if (e.key in keymap){
-        changeTool(keymap[e.key]);
-        return;
-    }
-
     if (e.code.startsWith("Digit") || e.code.startsWith("Numpad")) {
         let val = parseInt(e.code.slice(e.code.length-1)) - 1;
         if (e.shiftKey) {
@@ -134,11 +117,6 @@ function keyDown(e){
         } else {
             switchPreset(val);
         }
-    }
-}
-function keyUp(e){
-    if (e.key in keymap){
-        changeTool("pen");
     }
 }
 
@@ -154,22 +132,23 @@ function init(){
     ).subscribe(brushSubscriber);
 
     canvas.domElement.classList.add("canvas");
-    document.body.addEventListener("keydown", keyDown);
-    document.body.addEventListener("keyup", keyUp);
 
-    let modeInput = inputs.modeSwitch(document.body);
-    let modeSwitches = document.getElementsByClassName("modeSwitch");
-    for (let mode of modeSwitches){
-        elems.modeSwitches[mode.id] = mode;
-        mode.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            changeTool(e.target.id);
-        });
-        mode.addEventListener("pointerup", (e) => {
-            changeTool("pen");
-        });
-    }
-    changeTool("pen");
+    let keyboardModeInput = inputs.keyboardMode(keymap, document.body);
+    let modePanel = inputs.ModePanel(["pen", "erase", "move", "zoom"], modeSubject);
+    document.body.appendChild(modePanel.node);
+    let press = merge(keyboardModeInput.press, modePanel.press);
+    let release = merge(keyboardModeInput.release, modePanel.release);
+    merge(
+        press,
+        release.pipe(
+            withLatest(modeSubject),
+            filter(([mode, active]) => mode === active),
+            map((_) => "pen"),
+        ),
+    ).pipe(
+        distinctUntilChanged(),
+    ).subscribe(modeSubject);
+    modeSubject.subscribe({ next: console.log });
 
     let presetSwitches = document.getElementsByClassName("presetSwitch");
     for (let i = 0; i < presetSwitches.length; i ++) {

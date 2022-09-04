@@ -1,5 +1,5 @@
 let { Observable, of,  fromEvent, concat, merge } = rxjs;
-let { map, concatAll, share, first, windowToggle, pairwise } = rxjs;
+let { map, concatAll, share, first, filter, windowToggle, pairwise } = rxjs;
 
 import { Ul, Li, Button, Text } from "./ui.js";
 import { withLatest, asObservable } from "./util.js";
@@ -52,24 +52,48 @@ export let brush = (element) => {
     );
 };
 
-export let modeSwitch = (parent) => {
-    let buttons = ["pen", "eraser", "move", "zoom"].map(
-        (mode) => Li({
-            children: [Button({
-                "class": "modeSwitch",
-                id: mode,
-                children: [Text({
-                    text: mode[0],
-                })],
-            })],
-        }),
+export let keyboardMode = (keymap, element) => {
+    let applyKeymap = () => (observable) => observable.pipe(
+        filter(({ key }) => key in keymap),
+        map(({ key }) => keymap[key]),
     );
+    let press = fromEvent(element, "keydown").pipe(
+        filter(({ repeat }) => !repeat),
+        applyKeymap(),
+    );
+    let release = fromEvent(element, "keyup").pipe(
+        applyKeymap(),
+    );
+    return { press, release };
+}
+
+let ModeButton = (mode, activeMode) => {
+    let classList = activeMode.pipe(
+        map((active) => active === mode ? "modeSwitch active" : "modeSwitch"),
+    );
+    let node = Button({
+        "class": classList,
+        id: mode,
+        children: [Text({
+            text: mode[0],
+        })],
+    });
+    let press = fromEvent(node, "pointerdown").pipe(map((_) => mode));
+    let release = fromEvent(node, "pointerup").pipe(map((_) => mode));
+    return { node, press, release };
+}
+
+export let ModePanel = (modes, activeMode) => {
+    let buttons = modes.map((m) => ModeButton(m, activeMode));
     let panel = Ul({
-        children: buttons,
+        children: buttons.map(({ node }) => Li({
+            children: [node],
+        })),
         "class": "panelVert controls",
         id: "tools",
     });
-    parent.appendChild(panel);
+    let press = merge(...buttons.map(({ press }) => press));
+    let release = merge(...buttons.map(({ release }) => release));
 
-    return of();
+    return { node: panel, press, release };
 }
