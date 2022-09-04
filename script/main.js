@@ -48,21 +48,11 @@ function main(){
 
 let brushSubscriber = {
     next: ([stroke, mode]) => {
-        let [first, rest] = partition(stroke, (_, idx) => idx === 0);
-        first.subscribe({
-            next: (b) => {
-                if ("down" in modes[mode]) {
-                    modes[mode].down({...b, ...brush});
-                }
-            },
-        });
-        rest.subscribe({
-            next: (b) => {
-                rerender = true;
-                if ("move" in modes[mode]) {
-                    modes[mode].move({...b, ...brush});
-                }
-            },
+        stroke.pipe(
+            map((v) => ({...v, ...brush})),
+        ).subscribe(modes[mode]());
+        stroke.subscribe({
+            next: (_) => { rerender = true; },
             complete: () => {
                 sketch.trigger("up");
                 if ("up" in modes[mode]) {

@@ -3,29 +3,30 @@
 export const createDraw = (sketch) => {
     let id = 0, idstr;
     let curr;
-    return {
-        down: (inputs) => {
-            id ++;
-            curr = {
-                type: "line",
-                points: [sketch.pix2sketch(inputs.p)],
-                width: inputs.weight / sketch.view.scale,
-                palette: inputs.palette.slice(),
-                update: true
-            };
-            idstr = "line" + id;
-            sketch.data[idstr] = curr;
-            sketch.trigger("lineStart", idstr);
-        },
-        move: (inputs) => {
-            curr.points.push(sketch.pix2sketch(inputs.p));
-            sketch.trigger("lineAdd", idstr);
-        },
-        up: (inputs) => {
-            sketch.trigger("lineEnd", idstr);
-        }
-    }
-}
+    return () => {
+        id ++;
+        curr = {
+            type: "line",
+            points: [],
+            update: true
+        };
+        idstr = "line" + id;
+        sketch.data[idstr] = curr;
+        return {
+            next: (inputs) => {
+                curr.points.push(sketch.pix2sketch(inputs.p));
+                if (curr.points.length === 1) {
+                    curr.width = inputs.weight / sketch.view.scale;
+                    curr.palette = inputs.palette.slice();
+                    sketch.trigger("lineStart", idstr);
+                } else {
+                    sketch.trigger("lineAdd", idstr);
+                }
+            },
+            complete: () => sketch.trigger("lineEnd", idstr),
+        };
+    };
+};
 
 export const createErase = (sketch) => {
     let bounds = {};
@@ -60,8 +61,8 @@ export const createErase = (sketch) => {
     function remove(sketch, name) {
         delete bounds[name];
     }
-    return {
-        move: (inputs) => {
+    return () => ({
+        next: (inputs) => {
             let p = sketch.pix2sketch(inputs.p);
             let rad = inputs.weight * 20 / sketch.view.scale;
             for (let i in bounds) {
@@ -83,5 +84,5 @@ export const createErase = (sketch) => {
                 }
             }
         },
-    }
+    });
 }
