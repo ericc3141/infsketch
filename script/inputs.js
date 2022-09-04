@@ -2,7 +2,7 @@ let { Observable, of,  fromEvent, concat, merge } = rxjs;
 let { map, concatAll, share, first, windowToggle, pairwise } = rxjs;
 
 import { Ul, Li, Button, Text } from "./ui.js";
-import { withKey, forever, asObservable } from "./util.js";
+import { withLatest, asObservable } from "./util.js";
 
 let fromPointerUp = (element) => new Observable((subscriber) => {
     let listener = (e) => subscriber.next(e);
@@ -29,25 +29,6 @@ let uncoalesce = () => (observable) => observable.pipe(
 let clientCoords = () => (observable) => observable.pipe(
     map(({ clientX, clientY }) => [clientX, clientY]),
 );
-
-let withLatest = (...others) => (observable) => {
-    return new Observable((subscriber) => {
-        let values = others.map((_) => undefined);
-        let subscription = observable.subscribe({
-            next: (v) => subscriber.next([v, ...values]),
-            error: (err) => subscriber.error(err),
-            complete: () => subscriber.complete(),
-        });
-        let subscriptions = others.map((o, idx) => o.subscribe({
-            next: (v) => { values[idx] = v },
-        }))
-
-        return () => {
-            subscription.unsubscribe();
-            subscriptions.map((s) => s.unsubscribe());
-        };
-    });
-};
 
 export let brush = (element) => {
     let pointerMove = fromEvent(element, "pointermove").pipe(uncoalesce());

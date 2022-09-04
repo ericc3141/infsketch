@@ -1,6 +1,6 @@
 "use strict";
 
-let { partition } = rxjs;
+let { BehaviorSubject, partition } = rxjs;
 
 import { withEvents, createSketch, createPalette } from "./sketch.js";
 import { createGlview } from "./glview.js";
@@ -8,6 +8,7 @@ import { tools } from "./tools/tools.js";
 import { createEraser } from "./tools/pen.js";
 import { exportsvg, savesvg, importsvg, loadsvg } from "./exportsvg.js";
 import * as inputs from "./inputs.js";
+import { withLatest } from "./util.js";
 
 let brush = {
     weight: 1,
@@ -24,6 +25,7 @@ let elems = {
     presets: [],
 }
 
+let modeSubject = new BehaviorSubject("pen");
 let currTool = "";
 let currPreset = -1;
 let downPreset = -1;
@@ -53,27 +55,28 @@ function main(){
     rerender = false;
 }
 
+
 let brushSubscriber = {
-    next: (stroke) => {
+    next: ([stroke, mode]) => {
         let [first, rest] = partition(stroke, (_, idx) => idx === 0);
         first.subscribe({
             next: (b) => {
-                if (currTool in tools && "down" in tools[currTool]) {
-                    tools[currTool].down({inputs: {...b, ...brush}, sketch: sketch, view: canvas});
+                if (mode in tools && "down" in tools[mode]) {
+                    tools[mode].down({inputs: {...b, ...brush}, sketch: sketch, view: canvas});
                 }
             },
         });
         rest.subscribe({
             next: (b) => {
                 rerender = true;
-                if (currTool in tools && "move" in tools[currTool]) {
-                    tools[currTool].move({inputs: {...b, ...brush}, sketch: sketch, view: canvas});
+                if (mode in tools && "move" in tools[mode]) {
+                    tools[mode].move({inputs: {...b, ...brush}, sketch: sketch, view: canvas});
                 }
             },
             complete: () => {
                 sketch.trigger("up");
-                if (currTool in tools && "up" in tools[currTool]) {
-                   tools[currTool].up({inputs: brush, sketch: sketch, view: canvas});
+                if (mode in tools && "up" in tools[mode]) {
+                   tools[mode].up({inputs: brush, sketch: sketch, view: canvas});
                 }
             },
         });
@@ -89,6 +92,7 @@ function changeTool(newTool){
         elems.modeSwitches[currTool].classList.remove("active");
     }
     currTool = newTool;
+    modeSubject.next(currTool);
     elems.modeSwitches[currTool].classList.add("active");
 }
 function switchPreset(newPreset) {
@@ -145,7 +149,9 @@ function init(){
     window.addEventListener("resize", ()=>(canvas.resize()));
 
     let brushInput = inputs.brush(canvas.domElement);
-    brushInput.subscribe(brushSubscriber);
+    brushInput.pipe(
+        withLatest(modeSubject),
+    ).subscribe(brushSubscriber);
 
     canvas.domElement.classList.add("canvas");
     document.body.addEventListener("keydown", keyDown);

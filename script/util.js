@@ -22,3 +22,23 @@ export let asObservable = (value) => {
         return forever(value);
     }
 };
+
+export let withLatest = (...others) => (observable) => {
+    return new Observable((subscriber) => {
+        let values = others.map((_) => undefined);
+        let subscription = observable.subscribe({
+            next: (v) => subscriber.next([v, ...values]),
+            error: (err) => subscriber.error(err),
+            complete: () => subscriber.complete(),
+        });
+        let subscriptions = others.map((o, idx) => o.subscribe({
+            next: (v) => { values[idx] = v },
+        }))
+
+        return () => {
+            subscription.unsubscribe();
+            subscriptions.map((s) => s.unsubscribe());
+        };
+    });
+};
+
