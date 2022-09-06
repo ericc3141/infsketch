@@ -1,4 +1,4 @@
-"use strict";
+let { Subject } = rxjs;
 
 // Simple events mixin
 export const withEvents = (o) => {
@@ -21,19 +21,53 @@ export const withEvents = (o) => {
     return Object.assign(o, {on, trigger});
 }
 
-export const createSketch = () => ({
-    data: {},
-    view: {
-        center: [0, 0],
-        scale: 1,
-    },
-    pix2sketch: function pix2sketch(pix) {
-        return [
-            (pix[0] - window.innerWidth/2) / this.view.scale + this.view.center[0],
-            (window.innerHeight/2 - pix[1]) / this.view.scale + this.view.center[1]
-        ];
-    },
-})
+export const createSketch = () => {
+    let data = {};
+    let center = [0, 0];
+    let scale = 1;
+    let pix2sketch = (pix) => [
+        (pix[0] - window.innerWidth/2) / scale + center[0],
+        (window.innerHeight/2 - pix[1]) / scale + center[1]
+    ];
+
+    let lineCreate = new Subject();
+    let lineExtend = new Subject();
+    let lineComplete=  new Subject();
+    let lineDelete = new Subject();
+
+    let lineCount = 0;
+    let createLine = () => {
+        lineCount += 1;
+        let id = "line" + lineCount;
+        let line = {
+            type: "line",
+            points: [],
+        };
+        data[id] = line;
+        lineCreate.next(id)
+        return {
+            next: (points) => {
+                lineExtend.next([id, points]);
+                line.points.push(...points);
+            },
+            complete: () => lineComplete.next(id),
+        };
+    };
+    
+    let deleteLine = (id) => {
+        lineDelete.next(id);
+        delete data[id];
+    };
+
+    return {
+        data,
+        view: { center, scale },
+        pix2sketch,
+        createLine,
+        deleteLine,
+        on: { lineCreate, lineExtend, lineComplete, lineDelete },
+    };
+};
 
 export const createPalette = (o, size) => {
     const init_cvs = (size) => {

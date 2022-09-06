@@ -33,7 +33,7 @@ let rerender = false;
 let palette = withEvents(createPalette({}, 256));
 palette.loadImg("palette.png", ()=>{palette.trigger("change");setPreset(brush.palette[1]/32);});
 
-let sketch = withEvents(createSketch());
+let sketch = createSketch();
 let modes = createModes(sketch);
 
 let canvas = createGlview(palette, sketch);
@@ -48,17 +48,11 @@ function main(){
 
 let brushSubscriber = {
     next: ([stroke, mode]) => {
-        stroke.pipe(
+        modes[mode](stroke.pipe(
             map((v) => ({...v, ...brush})),
-        ).subscribe(modes[mode]());
+        ));
         stroke.subscribe({
             next: (_) => { rerender = true; },
-            complete: () => {
-                sketch.trigger("up");
-                if ("up" in modes[mode]) {
-                   modes[mode].up(brush);
-                }
-            },
         });
     },
 };
