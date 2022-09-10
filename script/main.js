@@ -10,10 +10,6 @@ import { exportsvg, savesvg, importsvg, loadsvg } from "./exportsvg.js";
 import * as inputs from "./inputs.js";
 import { withLatest } from "./util.js";
 
-let brush = {
-    weight: 1,
-    palette: [0, 0],
-}
 let keymap = {
     "a":MODES.DRAW,
     "s":MODES.ERASE,
@@ -25,14 +21,14 @@ let elems = {
     presets: [],
 }
 
-let modeSubject = new BehaviorSubject(MODES.DRAW);
-let currPreset = -1;
-let downPreset = -1;
+let activeMode = new BehaviorSubject(MODES.DRAW);
+let palettePicked = new BehaviorSubject([0, 0]);
+let paletteOffset = new BehaviorSubject([0, 0]);
+let paletteSrc = new BehaviorSubject("palette.png");
+
 let rerender = false;
 
-let palette = withEvents(createPalette({}, 256));
-palette.loadImg("palette.png", ()=>{palette.trigger("change");setPreset(brush.palette[1]/32);});
-
+let palette = createPalette(paletteSrc, paletteOffset);
 let sketch = createSketch();
 let modes = createModes(sketch);
 
@@ -47,52 +43,15 @@ function main(){
 
 
 let brushSubscriber = {
-    next: ([stroke, mode]) => {
+    next: ([stroke, mode, palette]) => {
         modes[mode](stroke.pipe(
-            map((v) => ({...v, ...brush})),
+            map((v) => ({...v, weight: 1, palette})),
         ));
         stroke.subscribe({
             next: (_) => { rerender = true; },
         });
     },
 };
-
-function switchPreset(newPreset) {
-    if (elems.presets[currPreset]) {
-        elems.presets[currPreset].classList.remove("active");
-    }
-    currPreset = newPreset;
-    brush.palette[0] = newPreset*32 + 16;
-    elems.presets[currPreset].classList.add("active");
-}
-function setPreset(newValue) {
-    palette.shiftTo([0, -newValue*32]);
-    brush.palette[1] = newValue*32;
-    rerender = true;
-    for (let i = 0; i < 8; i ++) {
-        let color = palette.color([i*32 + 16, newValue*32]);
-        elems.presets[i].setAttribute("style", `--active:rgba(${color[0]},${color[1]},${color[2]},${color[3]})`);
-    }
-}
-
-function presetColors(colors) {
-    for (let i in colors) {
-        elems.presets[i].setAttribute("style", "--active:"+colors[i]);
-    }
-}
-
-function keyDown(e){
-    if (e.repeat){return;}
-
-    if (e.code.startsWith("Digit") || e.code.startsWith("Numpad")) {
-        let val = parseInt(e.code.slice(e.code.length-1)) - 1;
-        if (e.shiftKey) {
-            setPreset(val);
-        } else {
-            switchPreset(val);
-        }
-    }
-}
 
 function init(){
     console.log("init");
@@ -102,42 +61,33 @@ function init(){
 
     let brushInput = inputs.brush(canvas.domElement);
     brushInput.pipe(
-        withLatest(modeSubject),
+        withLatest(activeMode, palettePicked),
     ).subscribe(brushSubscriber);
 
     canvas.domElement.classList.add("canvas");
 
     let keyboardModeInput = inputs.keyboardMode(keymap, document.body);
-    let modePanel = inputs.ModePanel(Object.values(MODES), modeSubject);
+    let modePanel = inputs.ModePanel(Object.values(MODES), activeMode);
     document.body.appendChild(modePanel.node);
     let press = merge(keyboardModeInput.press, modePanel.press);
     let release = merge(keyboardModeInput.release, modePanel.release);
     merge(
         press,
         release.pipe(
-            withLatest(modeSubject),
+            withLatest(activeMode),
             filter(([mode, active]) => mode === active),
             map((_) => MODES.DRAW),
         ),
     ).pipe(
         distinctUntilChanged(),
-    ).subscribe(modeSubject);
+    ).subscribe(activeMode);
 
-    let presetSwitches = document.getElementsByClassName("presetSwitch");
-    for (let i = 0; i < presetSwitches.length; i ++) {
-        elems.presets[i] = presetSwitches[i];
-        presetSwitches[i].addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            downPreset = i;
-        });
-        presetSwitches[i].addEventListener("pointerup", (e) => {
-            switchPreset(i);downPreset=-1;
-        });
-        presetSwitches[i].addEventListener("pointerleave", (e) => {
-            if (downPreset === i) {setPreset(i);}
-        });
-    }
-    switchPreset(0);
+    let keyboardPaletteInput = inputs.keyboardPalette(document.body);
+    let palettePanel = inputs.PalettePanel(palette, palettePicked);
+    document.body.appendChild(palettePanel.node);
+    merge(keyboardPaletteInput.pick, palettePanel.pick).subscribe(palettePicked);
+    keyboardPaletteInput.offset.subscribe(paletteOffset);
+
 
     document.getElementById("exportsvg").addEventListener("click", ()=>{
         savesvg(exportsvg(sketch, palette))

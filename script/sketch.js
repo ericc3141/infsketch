@@ -1,4 +1,5 @@
-let { Subject } = rxjs;
+let { Subject, BehaviorSubject, combineLatest } = rxjs;
+let { map } = rxjs;
 
 // Simple events mixin
 export const withEvents = (o) => {
@@ -69,45 +70,30 @@ export const createSketch = () => {
     };
 };
 
-export const createPalette = (o, size) => {
-    const init_cvs = (size) => {
-        let cvs = document.createElement("canvas");
-        cvs.width = size; cvs.height = size;
-        let ctx = cvs.getContext("2d");
-        ctx.fillRect(0, 0, size, size);
-        return [cvs, ctx];
-    }
-    let orig_cvs, orig_ctx, view_cvs, view_ctx;
-    [orig_cvs, orig_ctx] = init_cvs(size);
-    [view_cvs, view_ctx] = init_cvs(size);
+export const createPalette = (src, offset, size = 256) => {
+    let cvs = document.createElement("canvas");
+    cvs.width = size; cvs.height = size;
+    let ctx = cvs.getContext("2d");
+    ctx.fillRect(0, 0, size, size);
 
-    const redraw = () => {
-        view_ctx.drawImage(orig_cvs, -o.offset[0], -o.offset[1]);
-        view_ctx.drawImage(orig_cvs, -o.offset[0], -o.offset[1] - size);
-        view_ctx.drawImage(orig_cvs, -o.offset[0] - size, -o.offset[1]);
-        view_ctx.drawImage(orig_cvs, -o.offset[0] - size, -o.offset[1] - size);
-    }
-
-    const loadImg = (src, callback) => {
-        let img = document.createElement("img");
-        img.onload = () => {
-            orig_ctx.drawImage(img, 0, 0, size, size);
-            redraw();
-            callback();
-        }
-        img.src = src;
-    }
-
-    const color = (coord) => {
-        return view_ctx.getImageData(coord[0], coord[1], 1, 1).data
-    }
-    const shiftTo = (coord) => {
-        o.offset = coord.slice();
-        redraw();
-    }
-
-    return Object.assign(o, {
-        size, offset: [0,0], cvs: view_cvs, 
-        loadImg, shiftTo, color
+    let currentSrc = new BehaviorSubject(null);
+    let srcImg = document.createElement("img");
+    srcImg.addEventListener("load", () => {
+        ctx.drawImage(srcImg, 0, 0, size, size);
+        currentSrc.next(srcImg.src);
     });
+    src.subscribe({
+        next: (s) => { srcImg.src = s; },
+    });
+
+    let colorAt = ([ x, y ]) => combineLatest([currentSrc, offset]).pipe(
+        map(([_, [offX, offY]]) => ctx.getImageData(
+            (x + offX) % size,
+            (y + offY) % size,
+            1,
+            1,
+        ).data),
+    );
+
+    return { size, cvs, offset, src: currentSrc, colorAt };
 }

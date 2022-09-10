@@ -103,8 +103,14 @@ export const createGlview = (palette, sketch) => {
         u_paletteOffset: new Float32Array([0,0]),
     }
 
-    palette.on("change", () => {
-        twgl.setTextureFromElement(gl, paletteTex, palette.cvs, texOpts);
+    palette.src.subscribe({
+        next: (_) => twgl.setTextureFromElement(gl, paletteTex, palette.cvs, texOpts),
+    });
+    palette.offset.subscribe({
+        next: ([x, y]) => {
+            uniforms.u_paletteOffset[0] = x;
+            uniforms.u_paletteOffset[1] = y;
+        },
     });
 
     let getBlock = (id, numpoints) => {
@@ -205,8 +211,6 @@ export const createGlview = (palette, sketch) => {
         uniforms.u_center[0] = sketch.view.center[0];
         uniforms.u_center[1] = sketch.view.center[1];
         uniforms.u_scale = sketch.view.scale * window.devicePixelRatio;
-        uniforms.u_paletteOffset[0] = palette.offset[0];
-        uniforms.u_paletteOffset[1] = palette.offset[1];
         twgl.setUniforms(programInfo, uniforms);
         // Draw
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, strokes.length / 4);

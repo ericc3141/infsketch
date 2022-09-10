@@ -42,3 +42,9 @@ export let withLatest = (...others) => (observable) => {
     });
 };
 
+export let range = (start, end = null, step = 1) => {
+    [start, end] = end === null ? [0, start] : [start, end];
+    return Array(Math.floor((end - start) / step))
+        .fill(null)
+        .map((_, idx) => start + idx * step);
+};
