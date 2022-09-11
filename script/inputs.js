@@ -130,7 +130,7 @@ let PaletteButton = (idx, isActive, color) => {
             text: (idx+1).toString(),
         })],
     });
-    let pick = fromEvent(node, "pointerdown").pipe(map((_) => idx));
+    let pick = fromEvent(node, "pointerdown").pipe(map((_) => [idx*32, 0]));
     return { node, pick };
 }
 

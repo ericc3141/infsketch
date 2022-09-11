@@ -24,17 +24,23 @@ export const withEvents = (o) => {
 
 export const createSketch = () => {
     let data = {};
-    let center = [0, 0];
-    let scale = 1;
+    let view = {
+        center: [0, 0],
+        scale: 1,
+    };
     let pix2sketch = (pix) => [
-        (pix[0] - window.innerWidth/2) / scale + center[0],
-        (window.innerHeight/2 - pix[1]) / scale + center[1]
+        (pix[0] - window.innerWidth/2) / view.scale + view.center[0],
+        (window.innerHeight/2 - pix[1]) / view.scale + view.center[1]
     ];
 
-    let lineCreate = new Subject();
-    let lineExtend = new Subject();
-    let lineComplete=  new Subject();
-    let lineDelete = new Subject();
+    let events = {
+        lineCreate: new Subject(),
+        lineExtend: new Subject(),
+        lineComplete: new Subject(),
+        lineDelete: new Subject(),
+        move: new Subject(),
+        zoom: new Subject(),
+    };
 
     let lineCount = 0;
     let createLine = () => {
@@ -45,28 +51,40 @@ export const createSketch = () => {
             points: [],
         };
         data[id] = line;
-        lineCreate.next(id)
+        events.lineCreate.next(id)
         return {
             next: (points) => {
-                lineExtend.next([id, points]);
+                events.lineExtend.next([id, points]);
                 line.points.push(...points);
             },
-            complete: () => lineComplete.next(id),
+            complete: () => events.lineComplete.next(id),
         };
     };
     
     let deleteLine = (id) => {
-        lineDelete.next(id);
+        events.lineDelete.next(id);
         delete data[id];
+    };
+
+    let move = ([ dx, dy ]) => {
+        events.move.next([ dx, dy ]);
+        view.center[0] -= dx;
+        view.center[1] += dy;
+    };
+    let zoom = (ds) => {
+        events.zoom.next(ds);
+        view.scale *= ds;
     };
 
     return {
         data,
-        view: { center, scale },
+        view,
         pix2sketch,
         createLine,
         deleteLine,
-        on: { lineCreate, lineExtend, lineComplete, lineDelete },
+        move,
+        zoom,
+        on: events,
     };
 };
 

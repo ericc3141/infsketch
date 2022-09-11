@@ -1,14 +1,13 @@
-"use strict";
+let { map } = rxjs;
 
-export const createMove = (sketch) => (stroke) => stroke.subscribe({
-    next: (inputs) => {
-        sketch.view.center[0] -= inputs.d[0] / sketch.view.scale;
-        sketch.view.center[1] += inputs.d[1] / sketch.view.scale;
-    }
+export const createMove = (sketch) => (stroke) => stroke.pipe(
+    map(({ d: [ dx, dy ]}) => [ dx / sketch.view.scale, dy / sketch.view.scale ]),
+).subscribe({
+    next: sketch.move,
 });
 
-export const createZoom = (sketch) => (stroke) => stroke.subscribe({
-    next: (inputs) => {
-        sketch.view.scale *= Math.exp(-inputs.d[1]/100);
-    }
+export const createZoom = (sketch) => (stroke) => stroke.pipe(
+    map(({ d: [_, dy]}) => Math.exp(-dy/100)),
+).subscribe({
+    next: sketch.zoom,
 })

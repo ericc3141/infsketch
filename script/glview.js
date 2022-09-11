@@ -1,6 +1,5 @@
-/* Render sketches using WebGL
- */
-"use strict";
+let { fromEvent, merge, animationFrames } = rxjs;
+let { sample } = rxjs;
 
 import { createAlloc } from "./alloc.js";
 
@@ -48,6 +47,9 @@ export const createGlview = (palette, sketch) => {
         }
     }
     `;
+
+    let onResize = fromEvent(window, "resize");
+    let onLoad = fromEvent(window, "load");
 
     // Buffer for attributes
     // Each point gets 4 values: [x, y, palettex, palettey]
@@ -102,6 +104,7 @@ export const createGlview = (palette, sketch) => {
         u_palette: paletteTex,
         u_paletteOffset: new Float32Array([0,0]),
     }
+    twgl.setUniforms(programInfo, uniforms);
 
     palette.src.subscribe({
         next: (_) => twgl.setTextureFromElement(gl, paletteTex, palette.cvs, texOpts),
@@ -169,6 +172,47 @@ export const createGlview = (palette, sketch) => {
             delete allocs[id];
         },
     });
+    sketch.on.move.subscribe({
+        next: (_) => {
+            uniforms.u_center[0] = sketch.view.center[0];
+            uniforms.u_center[1] = sketch.view.center[1];
+        },
+    });
+    sketch.on.zoom.subscribe({
+        next: (_) => { uniforms.u_scale = sketch.view.scale * window.devicePixelRatio; },
+    });
+
+    merge(
+        onLoad,
+        onResize,
+    ).subscribe({
+        next: resize,
+    });
+    merge(
+        onLoad,
+        onResize,
+        sketch.on.move,
+        sketch.on.zoom,
+        palette.offset,
+    ).pipe(
+        sample(animationFrames()),
+    ).subscribe({
+        next: (_) => twgl.setUniforms(programInfo, uniforms),
+    });
+
+    merge(
+        onResize,
+        palette.src,
+        palette.offset,
+        sketch.on.lineExtend,
+        sketch.on.lineDelete,
+        sketch.on.move,
+        sketch.on.zoom,
+    ).pipe(
+        sample(animationFrames()),
+    ).subscribe({
+        next: render,
+    });
 
     /* Respond to window resize
      */
@@ -178,12 +222,10 @@ export const createGlview = (palette, sketch) => {
         uniforms.u_vheight = size[1];
         uniforms.u_aspect = size[0]/size[1];
         gl.viewport(0,0, size[0], size[1]);
-        render();
     }
 
     /* Redraw view.
-     * Uploads any ranges specified in updateRanges,
-     * Re-sets all uniforms, and draws.
+     * Uploads any ranges specified in updateRanges and draws.
      */
     function render() {
         // update ranges
@@ -207,11 +249,6 @@ export const createGlview = (palette, sketch) => {
                 strokes, update[0], update[1]);
         }
 //         gl.bufferData(gl.ARRAY_BUFFER, strokes, gl.DYNAMIC_DRAW);
-        // Update uniforms
-        uniforms.u_center[0] = sketch.view.center[0];
-        uniforms.u_center[1] = sketch.view.center[1];
-        uniforms.u_scale = sketch.view.scale * window.devicePixelRatio;
-        twgl.setUniforms(programInfo, uniforms);
         // Draw
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, strokes.length / 4);
     }

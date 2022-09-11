@@ -6,7 +6,6 @@ let { merge, filter, map, distinctUntilChanged } = rxjs;
 import { withEvents, createSketch, createPalette } from "./sketch.js";
 import { createGlview } from "./glview.js";
 import { MODES, createModes } from "./tools/tools.js";
-import { exportsvg, savesvg, importsvg, loadsvg } from "./exportsvg.js";
 import * as inputs from "./inputs.js";
 import { withLatest } from "./util.js";
 
@@ -26,30 +25,17 @@ let palettePicked = new BehaviorSubject([0, 0]);
 let paletteOffset = new BehaviorSubject([0, 0]);
 let paletteSrc = new BehaviorSubject("palette.png");
 
-let rerender = false;
-
 let palette = createPalette(paletteSrc, paletteOffset);
 let sketch = createSketch();
 let modes = createModes(sketch);
 
 let canvas = createGlview(palette, sketch);
 
-function main(){
-    requestAnimationFrame(main);
-    if (!rerender) { return;}
-    canvas.render();
-    rerender = false;
-}
-
-
 let brushSubscriber = {
     next: ([stroke, mode, palette]) => {
         modes[mode](stroke.pipe(
             map((v) => ({...v, weight: 1, palette})),
         ));
-        stroke.subscribe({
-            next: (_) => { rerender = true; },
-        });
     },
 };
 
@@ -57,7 +43,6 @@ function init(){
     console.log("init");
     document.body.addEventListener("contextmenu", (e) => {e.preventDefault();});
     document.body.appendChild(canvas.domElement);
-    window.addEventListener("resize", ()=>(canvas.resize()));
 
     let brushInput = inputs.brush(canvas.domElement);
     brushInput.pipe(
@@ -98,12 +83,9 @@ function init(){
         let name = file.name;
         reader.onload = (e) => {
             importsvg(sketch, loadsvg(e.target.result), name);
-            rerender = true;
         }
         reader.readAsText(file);
     });
-    canvas.resize();
-    main();
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register("worker.js")
