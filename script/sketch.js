@@ -1,27 +1,6 @@
 let { Subject, BehaviorSubject, combineLatest } = rxjs;
 let { map } = rxjs;
 
-// Simple events mixin
-export const withEvents = (o) => {
-    let events = {};
-    const on = (evt, func) => {
-        if (!(evt in events)) {
-            events[evt] = [];
-        }
-        events[evt].push(func);
-    }
-    const trigger = (evt, ...args) => {
-        if (!(evt in events)) {
-            return;
-        }
-        for (let e in events[evt]) {
-            events[evt][e](o, ...args);
-        }
-    }
-
-    return Object.assign(o, {on, trigger});
-}
-
 export const createSketch = () => {
     let data = {};
     let view = {

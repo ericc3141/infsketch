@@ -5,7 +5,7 @@ export const createDraw = (sketch) => (stroke) => {
         map(({p, weight, palette}) => [{
             x: sketch.pix2sketch(p)[0], 
             y: sketch.pix2sketch(p)[1], 
-            width: weight / sketch.view.scale,
+            width: 4 * Math.pow(weight, 2) / sketch.view.scale,
             paletteX: palette[0],
             paletteY: palette[1],
         }]),

@@ -1,8 +1,8 @@
 let { Observable, of, pipe, fromEvent, concat, merge, partition } = rxjs;
-let { map, concatAll, share, first, filter, windowToggle, pairwise } = rxjs;
+let { map, concatAll, share, first, filter, windowToggle, pairwise, withLatestFrom } = rxjs;
 
 import { Ul, Li, Button, Text } from "./ui.js";
-import { withLatest, asObservable, range } from "./util.js";
+import { asObservable, range } from "./util.js";
 
 let fromPointerUp = (element) => new Observable((subscriber) => {
     let listener = (e) => subscriber.next(e);
@@ -21,14 +21,12 @@ let fromPointerUp = (element) => new Observable((subscriber) => {
 });
 
 
-let uncoalesce = () => (observable) => observable.pipe(
+let uncoalesce = () => pipe(
     map((e) => of(...e.getCoalescedEvents())),
     concatAll(),
 );
 
-let clientCoords = () => (observable) => observable.pipe(
-    map(({ clientX, clientY }) => [clientX, clientY]),
-);
+let clientCoords = ({ clientX, clientY }) => [clientX, clientY];
 
 export let brush = (element) => {
     let pointerMove = fromEvent(element, "pointermove").pipe(uncoalesce());
@@ -37,14 +35,17 @@ export let brush = (element) => {
 
     let start = concat(
         of([0, 0]),
-        pointerDown.pipe(clientCoords())
+        pointerDown.pipe(map(clientCoords))
     );
     let position = pointerMove.pipe(
-        clientCoords(),
+        map((e) => ({
+            p: clientCoords(e),
+            // bug? where firefox is giving zero pressure for mouse with buttons pressed
+            weight: (e.pressure === 0 && e.buttons !== 0) ? 0.5 : e.pressure,
+        })),
         pairwise(),
-        map(([prev, curr]) => ({ p: curr, d: [curr[0]-prev[0], curr[1]-prev[1]] })),
-        withLatest(start),
-        map(([pos, start]) => ({...pos, p0: start})),
+        map(([prev, curr]) => ({ ...curr, d: [curr.p[0]-prev.p[0], curr.p[1]-prev.p[1]] })),
+        withLatestFrom(start, (pos, start) => ({...pos, p0: start})),
     );
 
     return position.pipe(

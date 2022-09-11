@@ -1,13 +1,12 @@
 "use strict";
 
 let { BehaviorSubject, partition } = rxjs;
-let { merge, filter, map, distinctUntilChanged } = rxjs;
+let { merge, filter, map, distinctUntilChanged, withLatestFrom } = rxjs;
 
-import { withEvents, createSketch, createPalette } from "./sketch.js";
+import { createSketch, createPalette } from "./sketch.js";
 import { createGlview } from "./glview.js";
 import { MODES, createModes } from "./tools/tools.js";
 import * as inputs from "./inputs.js";
-import { withLatest } from "./util.js";
 
 let keymap = {
     "a":MODES.DRAW,
@@ -32,11 +31,9 @@ let modes = createModes(sketch);
 let canvas = createGlview(palette, sketch);
 
 let brushSubscriber = {
-    next: ([stroke, mode, palette]) => {
-        modes[mode](stroke.pipe(
-            map((v) => ({...v, weight: 1, palette})),
-        ));
-    },
+    next: ([stroke, mode]) => modes[mode](stroke.pipe(
+        withLatestFrom(palettePicked, (b, palette) => ({...b, palette })),
+    )),
 };
 
 function init(){
@@ -46,7 +43,7 @@ function init(){
 
     let brushInput = inputs.brush(canvas.domElement);
     brushInput.pipe(
-        withLatest(activeMode, palettePicked),
+        withLatestFrom(activeMode),
     ).subscribe(brushSubscriber);
 
     canvas.domElement.classList.add("canvas");
@@ -59,7 +56,7 @@ function init(){
     merge(
         press,
         release.pipe(
-            withLatest(activeMode),
+            withLatestFrom(activeMode),
             filter(([mode, active]) => mode === active),
             map((_) => MODES.DRAW),
         ),
