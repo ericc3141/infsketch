@@ -67,30 +67,36 @@ export const createSketch = () => {
     };
 };
 
-export const createPalette = (src, offset, size = 256) => {
+export const createPalette = (size = 256) => {
     let cvs = document.createElement("canvas");
     cvs.width = size; cvs.height = size;
     let ctx = cvs.getContext("2d");
     ctx.fillRect(0, 0, size, size);
 
-    let currentSrc = new BehaviorSubject(null);
+    let offset = new BehaviorSubject([0, 0]);
+    let setOffset = offset.next;
+
+    let src = new BehaviorSubject(null);
+    let onLoad = new Subject();
     let srcImg = document.createElement("img");
     srcImg.addEventListener("load", () => {
         ctx.drawImage(srcImg, 0, 0, size, size);
-        currentSrc.next(srcImg.src);
+        onLoad.next(srcImg.src);
     });
-    src.subscribe({
-        next: (s) => { srcImg.src = s; },
-    });
+    let setSrc = (s) => { srcImg.src = s; };
 
-    let colorAt = ([ x, y ]) => combineLatest([currentSrc, offset]).pipe(
-        map(([_, [offX, offY]]) => ctx.getImageData(
+    let getColor = ([ x, y ]) => {
+        let [ offX, offY ] = offset.getValue();
+        return ctx.getImageData(
             (x + offX) % size,
             (y + offY) % size,
             1,
             1,
-        ).data),
+        ).data;
+    };
+    let colorAt = (c) => combineLatest([onLoad, offset]).pipe(
+        map((_) => getColor(c)),
     );
 
-    return { size, cvs, offset, src: currentSrc, colorAt };
+    return { size, cvs, setOffset, offset, setSrc, onLoad, getColor, colorAt };
 }

@@ -13,6 +13,8 @@ let keymap = {
     "s":MODES.ERASE,
     "d":MODES.MOVE,
     "f":MODES.ZOOM,
+    "c":MODES.SAVE,
+    "v":MODES.LOAD,
 }
 let elems = {
     modeSwitches: {},
@@ -21,12 +23,11 @@ let elems = {
 
 let activeMode = new BehaviorSubject(MODES.DRAW);
 let palettePicked = new BehaviorSubject([0, 0]);
-let paletteOffset = new BehaviorSubject([0, 0]);
-let paletteSrc = new BehaviorSubject("palette.png");
 
-let palette = createPalette(paletteSrc, paletteOffset);
+let palette = createPalette();
+palette.setSrc("palette.png");
 let sketch = createSketch();
-let modes = createModes(sketch);
+let modes = createModes(sketch, palette);
 
 let canvas = createGlview(palette, sketch);
 
@@ -68,21 +69,10 @@ function init(){
     let palettePanel = inputs.PalettePanel(palette, palettePicked);
     document.body.appendChild(palettePanel.node);
     merge(keyboardPaletteInput.pick, palettePanel.pick).subscribe(palettePicked);
-    keyboardPaletteInput.offset.subscribe(paletteOffset);
-
-
-    document.getElementById("exportsvg").addEventListener("click", ()=>{
-        savesvg(exportsvg(sketch, palette))
+    keyboardPaletteInput.offset.subscribe({
+        next: palette.setOffset,
     });
-    document.getElementById("importsvg").addEventListener("change", (e)=>{
-        let reader = new FileReader();
-        let file = e.target.files[0];
-        let name = file.name;
-        reader.onload = (e) => {
-            importsvg(sketch, loadsvg(e.target.result), name);
-        }
-        reader.readAsText(file);
-    });
+
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register("worker.js")

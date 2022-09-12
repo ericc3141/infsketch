@@ -106,7 +106,7 @@ export const createGlview = (palette, sketch) => {
     }
     twgl.setUniforms(programInfo, uniforms);
 
-    palette.src.subscribe({
+    palette.onLoad.subscribe({
         next: (_) => twgl.setTextureFromElement(gl, paletteTex, palette.cvs, texOpts),
     });
     palette.offset.subscribe({
@@ -202,7 +202,7 @@ export const createGlview = (palette, sketch) => {
 
     merge(
         onResize,
-        palette.src,
+        palette.onLoad,
         palette.offset,
         sketch.on.lineExtend,
         sketch.on.lineDelete,
