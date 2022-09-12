@@ -219,8 +219,8 @@ export const createGlview = (palette, sketch) => {
     function resize() {
         twgl.resizeCanvasToDisplaySize(gl.canvas, window.devicePixelRatio);
         size = [gl.canvas.width, gl.canvas.height];
-        uniforms.u_vheight = size[1];
-        uniforms.u_aspect = size[0]/size[1];
+        uniforms.u_vheight = window.innerHeight;
+        uniforms.u_aspect = window.innerWidth/window.innerHeight;
         gl.viewport(0,0, size[0], size[1]);
     }
 
