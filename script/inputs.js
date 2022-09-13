@@ -37,15 +37,24 @@ export let brush = (element) => {
         of([0, 0]),
         pointerDown.pipe(map(clientCoords))
     );
-    let position = pointerMove.pipe(
-        map((e) => ({
-            p: clientCoords(e),
-            // bug? where firefox is giving zero pressure for mouse with buttons pressed
-            weight: (e.pressure === 0 && e.buttons !== 0) ? 0.5 : e.pressure,
-        })),
+    let position = merge(pointerDown, pointerMove).pipe(
         pairwise(),
-        map(([prev, curr]) => ({ ...curr, d: [curr.p[0]-prev.p[0], curr.p[1]-prev.p[1]] })),
-        withLatestFrom(start, (pos, start) => ({...pos, p0: start})),
+        withLatestFrom(start),
+        map(([[ prev, curr ], p0]) => {
+            let [ prevX, prevY ] = clientCoords(prev);
+            let [ currX, currY ] = clientCoords(curr);
+            // bug? firefox appears to be giving position in movementX/Y
+            let d = curr.type !== "pointerdown" ?
+                [ currX - prevX, currY - prevY ] : [ 0, 0 ];
+            // bug? firefox is giving zero pressure for mouse with buttons pressed
+            let weight = (curr.pressure === 0 && curr.buttons !== 0) ? 0.5 : curr.pressure;
+            return {
+                p: [ currX, currY ],
+                p0,
+                weight,
+                d,
+            };
+        }),
     );
 
     return position.pipe(
