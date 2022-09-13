@@ -179,7 +179,7 @@ export const createGlview = (palette, sketch) => {
         },
     });
     sketch.on.zoom.subscribe({
-        next: (_) => { uniforms.u_scale = sketch.view.scale * window.devicePixelRatio; },
+        next: (_) => { uniforms.u_scale = sketch.view.scale; },
     });
 
     merge(
