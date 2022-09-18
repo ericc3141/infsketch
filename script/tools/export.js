@@ -94,7 +94,13 @@ export let save = (sketch, palette) => (stroke) => {
     });
 };
 
-let importsvg = (sketch, svgdoc) => {
+let importsvg = (sketch, svgdoc, center, size) => {
+    let svgViewbox = svgdoc.rootElement.viewBox.baseVal;
+    let svgCenter = [svgViewbox.x + svgViewbox.width/2, svgViewbox.y + svgViewbox.height/2];
+    let scale = Math.min(
+        size[0] / svgViewbox.width,
+        size[1] / svgViewbox.height,
+    );
     for (let elem of svgdoc.rootElement.children) {
         if (elem.tagName !== "polyline") {
             continue;
@@ -110,9 +116,9 @@ let importsvg = (sketch, svgdoc) => {
         let points = [];
         for (let point of elem.points) {
             points.push({
-                x: point.x,
-                y: -point.y,
-                width, 
+                x: (point.x - svgCenter[0]) * scale + center[0],
+                y: -(point.y - svgCenter[1]) * scale + center[1],
+                width: width * scale, 
                 paletteX: palette[0],
                 paletteY: palette[1],
             });
@@ -148,7 +154,11 @@ export let load = (sketch, _) => (stroke) => {
         },
         complete: async () => {
             let svg = await loadsvg();
-            importsvg(sketch, svg);
+            start = sketch.pix2sketch(start);
+            end = sketch.pix2sketch(end);
+            let center = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
+            let size = [Math.abs(start[0] - end[0]), Math.abs(start[1] - end[1])];
+            importsvg(sketch, svg, center, size);
         },
     });
 };

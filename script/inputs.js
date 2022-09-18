@@ -47,7 +47,9 @@ export let brush = (element) => {
             let d = curr.type !== "pointerdown" ?
                 [ currX - prevX, currY - prevY ] : [ 0, 0 ];
             // bug? firefox is giving zero pressure for mouse with buttons pressed
-            let weight = (curr.pressure === 0 && curr.buttons !== 0) ? 0.5 : curr.pressure;
+            // android gives pressure = 1 on non pressure sensitive screen
+            let weight = ((curr.pressure === 0 || curr.pressure === 1) && curr.buttons !== 0) ?
+                0.5 : curr.pressure;
             return {
                 p: [ currX, currY ],
                 p0,
