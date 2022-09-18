@@ -20,18 +20,15 @@
 <style>
 
 :root {
-    --main: #EC3141;
-    --gray: #CCC;
-    --white: #FFF;
-    --block: 10vw;
-}
-@media (min-width: 640px) {
-    :root {
-        --block: 64px;
-    }
+    --theme: #EC3141;
+    --outline: #314159;
+    --active: #314159;
+    --background: #FFF;
+    --block: min(15vh, 10vw, 64px);
 }
 * {
     margin: 0;
+    padding: 0;
     box-sizing: inherit;
     transition: inherit;
 }
@@ -44,43 +41,50 @@ body{
     transition: all 0.1s ease;
     height:100%;
     font-size: 1.2em;
-    background-color: var(--gray);
     touch-action:none;
     user-select: none;
     overflow:hidden;
 }
 
 .canvas {
-    background-color: var(--white);
+    background-color: var(--background);
     cursor:crosshair;
     width:100%;
     height:100%;
 }
 
-.panelVert, .panelHoriz {
-    position: fixed;
-    border: 1px solid var(--main);
-    border-radius: .5em 0 .5em 0;
-    overflow: hidden;
-}
-
 .controls {
-    padding: 0;
     list-style: none;
-}
-.panelHoriz li {
-    display: inline-block;
+    position: fixed;
 }
 
 #tools {
     left: 0;
-    top: var(--block);
+    top: 0;
 }
-button, .button {
-    --active: var(--main);
+#presets {
+    left: var(--block);
+    top: 0;
+}
+
+.panelHoriz li {
     display: inline-block;
+}
+.panelHoriz button {
+    border-width: calc(var(--block) / 8) 0 1px 0;
+    border-color: var(--active) transparent var(--active) transparent;
+    padding: 0 1px 0 calc(var(--block) / 8);
+}
+.panelVert button {
+    border-width: 0 1px 0 calc(var(--block) / 8);
+    border-color: transparent var(--active) transparent var(--active);
+    padding: calc(var(--block) / 8) 0 1px 0;
+}
+
+button {
     width: var(--block);
     height: var(--block);
+    display: inline-block;
     font-size: inherit;
     text-align: center;
     vertical-align: middle;
@@ -88,21 +92,13 @@ button, .button {
     color: var(--active);
     font-weight: bold;
     background: none;
-    border: none;
     mix-blend-mode: difference;
+    border-style: solid;
 }
-button:active, .active {
-    color: var(--white);
+.active {
+    color: var(--background);
     background-color: var(--active);
-}
-
-
-#presets {
-    left: var(--block);
-    top: 0;
-}
-#presets button {
-    border-top: calc(var(--block) / 8) solid var(--active);
+    border-color: var(--active);
 }
 
 </style>
